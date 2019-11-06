@@ -6,7 +6,7 @@ require (
 	github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
-	github.com/parnurzeal/gorequest v0.2.16 // indirect
+	github.com/parnurzeal/gorequest v0.2.16
 	github.com/prometheus/client_golang v1.2.1
 	github.com/prometheus/common v0.7.0
 	github.com/scottdware/go-easycsv v0.0.0-20180104194405-695e7e580f43 // indirect
