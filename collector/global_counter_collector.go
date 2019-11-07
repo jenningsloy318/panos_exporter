@@ -11,7 +11,7 @@ import (
 
 var (
 	GlobalCounterSubsystem  = "global_counter"
-	GlobalCounterLabelNames = []string{"category", "rate", "aspect", "id", "severity","dataplane"}
+	GlobalCounterLabelNames = []string{"category", "rate", "aspect", "id", "severity","data-processors"}
 )
 
 type GlobalCounterCollector struct {
