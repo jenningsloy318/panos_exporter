@@ -32,7 +32,7 @@ var (
 // Exporter collects panos metrics. It implements prometheus.Collector.
 type PanosCollector struct {
 	ctx        context.Context
-	panSession *panos.PaloAlto
+	panosClient *panos.PaloAlto
 	collectors map[string]prometheus.Collector
 	panosUp    prometheus.Gauge
 }
@@ -42,13 +42,13 @@ func NewPanosCollector(ctx context.Context, host string, username string, passwo
 		Credentials: []string{username, password},
 	}
 
-	panSession, err := panos.NewSession(host, panosCreds)
+	panosClient, err := panos.NewPanosClient(host, panosCreds)
 	if err != nil {
 		fmt.Println(err)
 	}
 	return &PanosCollector{
 		ctx:        ctx,
-		panSession: panSession,
+		panosClient: panosClient,
 		panosUp: prometheus.NewGauge(
 			prometheus.GaugeOpts{
 				Namespace: namespace,
@@ -70,10 +70,9 @@ func (p *PanosCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect implements prometheus.Collector.
 func (p *PanosCollector) Collect(ch chan<- prometheus.Metric) {
-	retrivePanCounterData(p.panSession)
 	scrapeTime := time.Now()
 
-	if p.panSession != nil {
+	if p.panosClient != nil {
 		defer p.ctx.Done()
 		p.panosUp.Set(1)
 	} else {
@@ -82,12 +81,4 @@ func (p *PanosCollector) Collect(ch chan<- prometheus.Metric) {
 
 	ch <- p.panosUp
 	ch <- prometheus.MustNewConstMetric(totalScrapeDurationDesc, prometheus.GaugeValue, time.Since(scrapeTime).Seconds())
-}
-
-func retrivePanCounterData(panSession *panos.PaloAlto) {
-	CounterData, err := panSession.GetCounterData()
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(CounterData.Result.InterfaceCounter.HwCounterData.HwEntriesData[0])
 }

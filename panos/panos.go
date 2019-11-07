@@ -103,6 +103,9 @@ type systemInfo struct {
 // commandOutput holds the results of our operational mode commands that were issued.
 
 var (
+
+
+	
 	r = gorequest.New().TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 
 	errorCodes = map[string]string{
@@ -137,7 +140,7 @@ var (
 // is used to define two ways of authenticating to the device. One is via username/password, the other is with
 // the API key if you already have generated it. Please see the documentation for the AuthMethod struct for further
 // details.
-func NewSession(host string, authmethod *AuthMethod) (*PaloAlto, error) {
+func NewPanosClient(host string, authmethod *AuthMethod) (*PaloAlto, error) {
 	var keygen authKey
 	var key string
 	var info systemInfo
