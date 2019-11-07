@@ -222,7 +222,57 @@ func NewPanosClient(host string, authmethod *AuthMethod) (*PaloAlto, error) {
 	}, nil
 }
 
-// GetCounterData() will execute "<show><counter></counter></show>" towards the api to get all counter data for panos
+// GetGlobalCounterData() will   get all counter data for global counter
+
+
+type GlobalCounterEntryData struct {
+	Category string  `xml:"category"`
+	Name     string  `xml:"name"`
+	Value    float64 `xml:"value"`
+	Rate     string `xml:"rate"`
+	Aspect   string  `xml:"aspect"`
+	Desc     string  `xml:"desc"`
+	ID       string  `xml:"id"`
+	Severity string  `xml:"severity"`
+}
+
+type GlobalCounterEntries struct {
+	GlobalCounterEntriesData []GlobalCounterEntryData `xml:"entry"`
+}
+
+type GlobalCounters struct {
+	GlobalCountersData GlobalCounterEntries `xml:"counters,omitempty"`
+	T                  float64              `xml:t`
+}
+
+type GlobalCounterResponse struct {
+	XMLName xml.Name `xml:"response"`
+	Status  string   `xml:"status,attr"`
+	Code    string   `xml:"code,attr"`
+	Result  struct {
+		DP string  `xml:"dp,omitempty"`
+		GlobalCounter    GlobalCounters    `xml:"global,omitempty"`
+	} `xml:"result"`
+}
+
+func (p *PaloAlto) GetGlobalCounterData() (GlobalCounterResponse, error) {
+	var globalCounterResponse GlobalCounterResponse
+	command := "<show><counter><global></global></counter></show>"
+	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
+	if errs != nil {
+		return globalCounterResponse, errs[0]
+	}
+
+	err := xml.Unmarshal([]byte(res), &globalCounterResponse)
+	if err != nil {
+		return globalCounterResponse, err
+	}
+	return globalCounterResponse, nil
+}
+
+// GetInterfaceCounterData() will get counter data for interfaces 
+
+
 type IfnetEntryData struct {
 	IcmpFrag   float64 `xml:"icmp_frag"`
 	Ifwderrors float64 `xml:"ifwderrors"`
@@ -253,8 +303,8 @@ type IfnetEntryData struct {
 	Idrops     float64 `xml:"idrops"`
 }
 
-type IfnetEntries struct {
-	IfnetEntriesData []IfnetEntryData `xml:"entry"`
+type IfnetCounters struct {
+	IfnetCountersData []IfnetEntryData `xml:"entry"`
 }
 
 type HwPort struct {
@@ -279,57 +329,32 @@ type HwEntryData struct {
 	Port     HwPort  `xml:"port"`
 }
 
-type HwEntries struct {
-	HwEntriesData []HwEntryData `xml:"entry"`
+type HwCounters struct {
+	HwCountersData []HwEntryData `xml:"entry"`
 }
 
-type InterfaceCounters struct {
-	IfnetCounterData IfnetEntries `xml:"ifnet,omitempty"`
-	HwCounterData    HwEntries    `xml:"hw,omitempty"`
-}
 
-type GlobalCounterEntryData struct {
-	Category string  `xml:"category"`
-	Name     string  `xml:"name"`
-	Value    float64 `xml:"value"`
-	Rate     float64 `xml:"rate"`
-	Aspect   string  `xml:"aspect"`
-	Desc     string  `xml:"desc"`
-	ID       string  `xml:"id"`
-	Severity string  `xml:"severity"`
-}
 
-type GlobalCounterEntries struct {
-	GlobalCounterEntriesData []GlobalCounterEntryData `xml:"entry"`
-}
-
-type GlobalCounters struct {
-	GlobalCountersData GlobalCounterEntries `xml:"counters,omitempty"`
-	T                  float64              `xml:t`
-}
-
-type CounterResponse struct {
+type InterfaceCounterResponse struct {
 	XMLName xml.Name `xml:"response"`
 	Status  string   `xml:"status,attr"`
 	Code    string   `xml:"code,attr"`
 	Result  struct {
-		DP               string            `xml:"dp,omitempty"`
-		GlobalCounter    GlobalCounters    `xml:"global,omitempty"`
-		InterfaceCounter InterfaceCounters `xml:"interface,omitempty"`
-	} `xml:"result"`
+		IfnetCounter IfnetCounters `xml:"ifnet,omitempty"`
+		HwCounter    HwCounters    `xml:"hw,omitempty"`
+		} `xml:"result"`
 }
-
-func (p *PaloAlto) GetCounterData() (CounterResponse, error) {
-	var counterResponse CounterResponse
-	command := "<show><counter></counter></show>"
+func (p *PaloAlto) GetInterfaceCounterData() (InterfaceCounterResponse, error) {
+	var interfaceCounterResponse InterfaceCounterResponse
+	command := "<show><counter><interface>all</interface></counter></show>"
 	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
 	if errs != nil {
-		return counterResponse, errs[0]
+		return interfaceCounterResponse, errs[0]
 	}
 
-	err := xml.Unmarshal([]byte(res), &counterResponse)
+	err := xml.Unmarshal([]byte(res), &interfaceCounterResponse)
 	if err != nil {
-		return counterResponse, err
+		return interfaceCounterResponse, err
 	}
-	return counterResponse, nil
+	return interfaceCounterResponse, nil
 }

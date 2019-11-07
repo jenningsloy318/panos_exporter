@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
 	"time"
+	"sync"
 	//	"github.com/prometheus/common/log"
 	"context"
 	"github.com/jenningsloy318/panos_exporter/panos"
@@ -46,9 +47,12 @@ func NewPanosCollector(ctx context.Context, host string, username string, passwo
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	globalCounterCollector:=NewGlobalCounterCollector(ctx,namespace,panosClient)
 	return &PanosCollector{
 		ctx:        ctx,
 		panosClient: panosClient,
+		collectors: map[string]prometheus.Collector{"GlobalCounter":globalCounterCollector},
 		panosUp: prometheus.NewGauge(
 			prometheus.GaugeOpts{
 				Namespace: namespace,
@@ -75,6 +79,16 @@ func (p *PanosCollector) Collect(ch chan<- prometheus.Metric) {
 	if p.panosClient != nil {
 		defer p.ctx.Done()
 		p.panosUp.Set(1)
+		wg := &sync.WaitGroup{}
+		wg.Add(len(p.collectors))
+		
+		defer wg.Wait()
+		for _, collector := range p.collectors {
+			go func (collector prometheus.Collector) {
+				defer wg.Done()
+				collector.Collect(ch)
+			}(collector)
+		}
 	} else {
 		p.panosUp.Set(0)
 	}
