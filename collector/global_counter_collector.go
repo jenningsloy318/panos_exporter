@@ -1,23 +1,28 @@
 package collector
 
 import (
-	"fmt"
-	"github.com/prometheus/client_golang/prometheus"
 	"context"
+	"fmt"
 	"github.com/jenningsloy318/panos_exporter/panos"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
 	//"net/url"
 )
 
 var (
 	GlobalCounterSubsystem  = "global_counter"
-	GlobalCounterLabelNames = []string{"category", "rate", "aspect", "id", "severity","data-processors"}
+	GlobalCounterLabelNames = []string{"category", "rate", "aspect", "id", "severity", "data_processor"}
 )
 
 type GlobalCounterCollector struct {
-	ctx                     context.Context
-	panosClient             *panos.PaloAlto
-	collectorScrapeStatus   *prometheus.GaugeVec
+	ctx                   context.Context
+	metrics               map[string]GlobalCounterMetric
+	panosClient           *panos.PaloAlto
+	collectorScrapeStatus *prometheus.GaugeVec
+}
+
+type GlobalCounterMetric struct {
+	desc *prometheus.Desc
 }
 
 func NewGlobalCounterCollector(ctx context.Context, namespace string, panosClient *panos.PaloAlto) *GlobalCounterCollector {
@@ -48,6 +53,9 @@ func (g *GlobalCounterCollector) Collect(ch chan<- prometheus.Metric) {
 	_, gCancel := context.WithCancel(g.ctx)
 	defer gCancel()
 
+	//initialize metrics map allows later assignment
+	g.metrics = map[string]GlobalCounterMetric{}
+
 	globalCounterData, err := g.panosClient.GetGlobalCounterData()
 	if err != nil {
 		log.Infof("Error getting global counter data, %s", err)
@@ -57,16 +65,22 @@ func (g *GlobalCounterCollector) Collect(ch chan<- prometheus.Metric) {
 	globalCounterDataEntries := globalCounterData.Result.GlobalCounter.GlobalCountersData.GlobalCounterEntriesData
 
 	for _, entry := range globalCounterDataEntries {
-		labelValues := []string{entry.Category, entry.Rate, entry.Aspect, entry.ID, entry.Severity,dp}
+		labelValues := []string{entry.Category, entry.Rate, entry.Aspect, entry.ID, entry.Severity, dp}
 		metricName := entry.Name
+
 		metricDesc := fmt.Sprintf("global counter for %s", entry.Desc)
-		desc := prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, GlobalCounterSubsystem, metricName),
-			metricDesc,
-			GlobalCounterLabelNames,
-			nil,
-		)
-		ch <- prometheus.MustNewConstMetric(desc, prometheus.GaugeValue, entry.Value, labelValues...)
+		newGlobalCounterMetric := GlobalCounterMetric{
+			desc: prometheus.NewDesc(
+				prometheus.BuildFQName(namespace, GlobalCounterSubsystem, metricName),
+				metricDesc,
+				GlobalCounterLabelNames,
+				nil,
+			),
+		}
+
+		g.metrics[metricName] = newGlobalCounterMetric
+
+		ch <- prometheus.MustNewConstMetric(newGlobalCounterMetric.desc, prometheus.GaugeValue, entry.Value, labelValues...)
 	}
 	g.collectorScrapeStatus.WithLabelValues("global_counter").Set(float64(1))
 }
