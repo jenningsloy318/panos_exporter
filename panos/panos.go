@@ -103,9 +103,6 @@ type systemInfo struct {
 // commandOutput holds the results of our operational mode commands that were issued.
 
 var (
-
-
-	
 	r = gorequest.New().TLSClientConfig(&tls.Config{InsecureSkipVerify: true})
 
 	errorCodes = map[string]string{
@@ -224,12 +221,11 @@ func NewPanosClient(host string, authmethod *AuthMethod) (*PaloAlto, error) {
 
 // GetGlobalCounterData() will   get all counter data for global counter
 
-
 type GlobalCounterEntryData struct {
 	Category string  `xml:"category"`
 	Name     string  `xml:"name"`
 	Value    float64 `xml:"value"`
-	Rate     string `xml:"rate"`
+	Rate     string  `xml:"rate"`
 	Aspect   string  `xml:"aspect"`
 	Desc     string  `xml:"desc"`
 	ID       string  `xml:"id"`
@@ -250,8 +246,8 @@ type GlobalCounterResponse struct {
 	Status  string   `xml:"status,attr"`
 	Code    string   `xml:"code,attr"`
 	Result  struct {
-		DP string  `xml:"dp,omitempty"`
-		GlobalCounter    GlobalCounters    `xml:"global,omitempty"`
+		DP            string         `xml:"dp,omitempty"`
+		GlobalCounter GlobalCounters `xml:"global,omitempty"`
 	} `xml:"result"`
 }
 
@@ -270,11 +266,10 @@ func (p *PaloAlto) GetGlobalCounterData() (GlobalCounterResponse, error) {
 	return globalCounterResponse, nil
 }
 
-// GetInterfaceCounterData() will get counter data for interfaces 
-
+// GetInterfaceCounterData() will get counter data for interfaces
 
 type IfnetEntryData struct {
-	IcmpFrag   float64 `xml:"icmp_frag"`
+	Icmp_Frag   float64 `xml:"icmp_frag"`
 	Ifwderrors float64 `xml:"ifwderrors"`
 	Ierrors    float64 `xml:"ierrors"`
 	Macspoof   float64 `xml:"macspoof"`
@@ -284,22 +279,22 @@ type IfnetEntryData struct {
 	Teardrop   float64 `xml:"teardrop"`
 	Ibytes     float64 `xml:"ibytes"`
 	Noarp      float64 `xml:"noarp"`
-	SctpConn   float64 `xml:"sctp_conn"`
+	Sctp_Conn   float64 `xml:"sctp_conn"`
 	Noroute    float64 `xml:"noroute"`
 	Noneigh    float64 `xml:"noneigh"`
 	Nomac      float64 `xml:"nomac"`
-	L2Encap    float64 `xml:"l2_encap"`
+	L2_Encap    float64 `xml:"l2_encap"`
 	Zonechange float64 `xml:"zonechange"`
-	OtherConn  float64 `xml:"other_conn"`
+	Other_Conn  float64 `xml:"other_conn"`
 	Obytes     float64 `xml:"obytes"`
 	Land       float64 `xml:"land"`
 	Name       string  `xml:"name"`
-	TcpConn    float64 `xml:"tcp_conn"`
+	Tcp_Conn    float64 `xml:"tcp_conn"`
 	Neighpend  float64 `xml:"neighpend"`
 	Ipackets   float64 `xml:"ipackets"`
 	Opackets   float64 `xml:"opackets"`
-	L2Decap    float64 `xml:"l2_decap"`
-	UdpConn    float64 `xml:"udp_conn"`
+	L2_Decap    float64 `xml:"l2_decap"`
+	Udp_Conn    float64 `xml:"udp_conn"`
 	Idrops     float64 `xml:"idrops"`
 }
 
@@ -308,14 +303,14 @@ type IfnetCounters struct {
 }
 
 type HwPort struct {
-	TxUnicast   float64 `xml:"tx-unicast"`
-	TxMulticast float64 `xml:"tX-multicast"`
-	RxBroadcast float64 `xml:"rx-broadcast"`
-	RxUnicast   float64 `xml:"rx-unicast"`
-	RxMulticast float64 `xml:"rx-multicast"`
-	RxBytes     float64 `xml:"rx-bytes"`
-	TxBroadcast float64 `xml:"tx-broadcast"`
-	TxBytes     float64 `xml:"tx-bytes"`
+	Tx_Unicast   float64 `xml:"tx-unicast"`
+	Tx_Multicast float64 `xml:"tX-multicast"`
+	Rx_Broadcast float64 `xml:"rx-broadcast"`
+	Rx_Unicast   float64 `xml:"rx-unicast"`
+	Rx_Multicast float64 `xml:"rx-multicast"`
+	Rx_Bytes     float64 `xml:"rx-bytes"`
+	Tx_Broadcast float64 `xml:"tx-broadcast"`
+	Tx_Bytes     float64 `xml:"tx-bytes"`
 }
 
 type HwEntryData struct {
@@ -333,17 +328,16 @@ type HwCounters struct {
 	HwCountersData []HwEntryData `xml:"entry"`
 }
 
-
-
 type InterfaceCounterResponse struct {
 	XMLName xml.Name `xml:"response"`
 	Status  string   `xml:"status,attr"`
 	Code    string   `xml:"code,attr"`
 	Result  struct {
-		IfnetCounter IfnetCounters `xml:"ifnet,omitempty"`
+		IfnetCounter IfnetCounters `xml:"ifnet>ifnet,omitempty"`
 		HwCounter    HwCounters    `xml:"hw,omitempty"`
-		} `xml:"result"`
+	} `xml:"result"`
 }
+
 func (p *PaloAlto) GetInterfaceCounterData() (InterfaceCounterResponse, error) {
 	var interfaceCounterResponse InterfaceCounterResponse
 	command := "<show><counter><interface>all</interface></counter></show>"
