@@ -17,7 +17,7 @@ var (
 	listenAddress = kingpin.Flag(
 		"web.listen-address",
 		"Address to listen on for web interface and telemetry.",
-	).Default(":9610").String()
+	).Default(":9654").String()
 	sc = &SafeConfig{
 		C: &Config{},
 	}

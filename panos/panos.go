@@ -269,7 +269,7 @@ func (p *PaloAlto) GetGlobalCounterData() (GlobalCounterResponse, error) {
 // GetInterfaceCounterData() will get counter data for interfaces
 
 type IfnetEntryData struct {
-	Icmp_Frag   float64 `xml:"icmp_frag"`
+	Icmp_Frag  float64 `xml:"icmp_frag"`
 	Ifwderrors float64 `xml:"ifwderrors"`
 	Ierrors    float64 `xml:"ierrors"`
 	Macspoof   float64 `xml:"macspoof"`
@@ -279,22 +279,22 @@ type IfnetEntryData struct {
 	Teardrop   float64 `xml:"teardrop"`
 	Ibytes     float64 `xml:"ibytes"`
 	Noarp      float64 `xml:"noarp"`
-	Sctp_Conn   float64 `xml:"sctp_conn"`
+	Sctp_Conn  float64 `xml:"sctp_conn"`
 	Noroute    float64 `xml:"noroute"`
 	Noneigh    float64 `xml:"noneigh"`
 	Nomac      float64 `xml:"nomac"`
-	L2_Encap    float64 `xml:"l2_encap"`
+	L2_Encap   float64 `xml:"l2_encap"`
 	Zonechange float64 `xml:"zonechange"`
-	Other_Conn  float64 `xml:"other_conn"`
+	Other_Conn float64 `xml:"other_conn"`
 	Obytes     float64 `xml:"obytes"`
 	Land       float64 `xml:"land"`
 	Name       string  `xml:"name"`
-	Tcp_Conn    float64 `xml:"tcp_conn"`
+	Tcp_Conn   float64 `xml:"tcp_conn"`
 	Neighpend  float64 `xml:"neighpend"`
 	Ipackets   float64 `xml:"ipackets"`
 	Opackets   float64 `xml:"opackets"`
-	L2_Decap    float64 `xml:"l2_decap"`
-	Udp_Conn    float64 `xml:"udp_conn"`
+	L2_Decap   float64 `xml:"l2_decap"`
+	Udp_Conn   float64 `xml:"udp_conn"`
 	Idrops     float64 `xml:"idrops"`
 }
 
@@ -302,26 +302,22 @@ type IfnetCounters struct {
 	IfnetCountersData []IfnetEntryData `xml:"entry"`
 }
 
-type HwPort struct {
-	Tx_Unicast   float64 `xml:"tx-unicast"`
-	Tx_Multicast float64 `xml:"tX-multicast"`
-	Rx_Broadcast float64 `xml:"rx-broadcast"`
-	Rx_Unicast   float64 `xml:"rx-unicast"`
-	Rx_Multicast float64 `xml:"rx-multicast"`
-	Rx_Bytes     float64 `xml:"rx-bytes"`
-	Tx_Broadcast float64 `xml:"tx-broadcast"`
-	Tx_Bytes     float64 `xml:"tx-bytes"`
-}
-
 type HwEntryData struct {
-	Obytes   float64 `xml:"obytes"`
-	Name     string  `xml:"name"`
-	Idrops   float64 `xml:"idrops"`
-	Ipackets float64 `xml:"ipackets"`
-	Opackets float64 `xml:"opackets"`
-	Ierrors  float64 `xml:"ierrors"`
-	ibytes   float64 `xml:"ibytes"`
-	Port     HwPort  `xml:"port"`
+	Obytes       float64 `xml:"obytes"`
+	Name         string  `xml:"name"`
+	Idrops       float64 `xml:"idrops"`
+	Ipackets     float64 `xml:"ipackets"`
+	Opackets     float64 `xml:"opackets"`
+	Ierrors      float64 `xml:"ierrors"`
+	Ibytes       float64 `xml:"ibytes"`
+	Tx_Unicast   float64 `xml:"port>tx-unicast"`
+	Tx_Multicast float64 `xml:"port>tx-multicast"`
+	Rx_Broadcast float64 `xml:"port>rx-broadcast"`
+	Rx_Unicast   float64 `xml:"port>rx-unicast"`
+	Rx_Multicast float64 `xml:"port>rx-multicast"`
+	Rx_Bytes     float64 `xml:"port>rx-bytes"`
+	Tx_Broadcast float64 `xml:"port>tx-broadcast"`
+	Tx_Bytes     float64 `xml:"port>tx-bytes"`
 }
 
 type HwCounters struct {

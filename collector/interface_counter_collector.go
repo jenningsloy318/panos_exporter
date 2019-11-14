@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	InterfaceCounterSubsystem  = "interface_counter"
+	InterfaceCounterSubsystem  = "interface"
 	InterfaceCounterLabelNames = []string{"name", "domain", "category"}
 )
 
@@ -60,6 +60,8 @@ func (i *InterfaceCounterCollector) Collect(ch chan<- prometheus.Metric) {
 		log.Infof("Error getting Interface counter data, %s", err)
 		return
 	}
+
+	// parse interface ifnet counters
 	IfnetCounterDataEntries := interfaceCounterData.Result.IfnetCounter.IfnetCountersData
 
 	for _, entry := range IfnetCounterDataEntries {
@@ -71,7 +73,7 @@ func (i *InterfaceCounterCollector) Collect(ch chan<- prometheus.Metric) {
 		for index := 0; index < valueOfEntry.NumField(); index++ {
 			var floatType = reflect.TypeOf(float64(0))
 
-			metricName := strings.ToLower(typeOfEntry.Field(index).Name) 
+			metricName := fmt.Sprintf("ifnet_%s", strings.ToLower(typeOfEntry.Field(index).Name))
 			metricValue := valueOfEntry.Field(index)
 			if !metricValue.Type().ConvertibleTo(floatType) {
 				fmt.Errorf("cannot convert %v to float64", metricValue.Type())
@@ -90,6 +92,37 @@ func (i *InterfaceCounterCollector) Collect(ch chan<- prometheus.Metric) {
 			ch <- prometheus.MustNewConstMetric(newInterfaceCounterMetric.desc, prometheus.GaugeValue, metricValue.Convert(floatType).Float(), labelValues...)
 		}
 	}
+	// parse interface hw counters
+	HWCounterDataEntries := interfaceCounterData.Result.HwCounter.HwCountersData
+	for _, entry := range HWCounterDataEntries {
+		labelValues := []string{entry.Name, "interface", "hw"}
+
+		valueOfEntry := reflect.ValueOf(&entry).Elem()
+		typeOfEntry := valueOfEntry.Type()
+
+		for index := 0; index < valueOfEntry.NumField(); index++ {
+			var floatType = reflect.TypeOf(float64(0))
+
+			metricName := fmt.Sprintf("hw_%s", strings.ToLower(typeOfEntry.Field(index).Name))
+			metricValue := valueOfEntry.Field(index)
+			if !metricValue.Type().ConvertibleTo(floatType) {
+				fmt.Errorf("cannot convert %v to float64", metricValue.Type())
+				continue
+			}
+			metricDesc := fmt.Sprintf("Interface counter for interface hw  %s", metricName)
+			newInterfaceCounterMetric := InterfaceCounterMetric{
+				desc: prometheus.NewDesc(
+					prometheus.BuildFQName(namespace, InterfaceCounterSubsystem, metricName),
+					metricDesc,
+					InterfaceCounterLabelNames,
+					nil,
+				),
+			}
+			i.metrics[metricName] = newInterfaceCounterMetric
+			ch <- prometheus.MustNewConstMetric(newInterfaceCounterMetric.desc, prometheus.GaugeValue, metricValue.Convert(floatType).Float(), labelValues...)
+		}
+	}
+
 	i.collectorScrapeStatus.WithLabelValues("interface_counter").Set(float64(1))
 
 }

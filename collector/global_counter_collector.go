@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	GlobalCounterSubsystem  = "global_counter"
+	GlobalCounterSubsystem  = "global"
 	GlobalCounterLabelNames = []string{"category", "rate", "aspect", "id", "severity", "data_processor", "domain"}
 )
 
