@@ -9,7 +9,7 @@ import (
 )
 
 type Config struct {
-	Credentials map[string]Credential `yaml:"credentials"`
+	Devices map[string]DeviceConfig `yaml:"devices"`
 }
 
 type SafeConfig struct {
@@ -17,7 +17,7 @@ type SafeConfig struct {
 	C *Config
 }
 
-type Credential struct {
+type DeviceConfig struct {
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
 }
@@ -43,20 +43,20 @@ func (sc *SafeConfig) ReloadConfig(configFile string) error {
 	return nil
 }
 
-func (sc *SafeConfig) CredentialsForTarget(target string) (*Credential, error) {
+func (sc *SafeConfig) DeviceConfigForTarget(target string) (*DeviceConfig, error) {
 	sc.Lock()
 	defer sc.Unlock()
-	if credential, ok := sc.C.Credentials[target]; ok {
-		return &Credential{
-			Username: credential.Username,
-			Password: credential.Password,
+	if deviceConfig, ok := sc.C.Devices[target]; ok {
+		return &DeviceConfig{
+			Username: deviceConfig.Username,
+			Password: deviceConfig.Password,
 		}, nil
 	}
-	if credential, ok := sc.C.Credentials["default"]; ok {
-		return &Credential{
-			Username: credential.Username,
-			Password: credential.Password,
+	if deviceConfig, ok := sc.C.Devices["default"]; ok {
+		return &DeviceConfig{
+			Username: deviceConfig.Username,
+			Password: deviceConfig.Password,
 		}, nil
 	}
-	return &Credential{}, fmt.Errorf("no credentials found for target %s", target)
+	return &DeviceConfig{}, fmt.Errorf("no credentials found for target %s", target)
 }

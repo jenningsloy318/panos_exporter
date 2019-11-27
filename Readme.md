@@ -5,7 +5,7 @@ panos_exporter is an exporter to scape metrics from Paloalto NGFW api to get its
 
 create a example configuration as yaml file:
 ```yaml
-credentials:
+devices:
     10.36.48.15:
       username: user
       password: pass

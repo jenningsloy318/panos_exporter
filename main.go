@@ -36,13 +36,13 @@ func metricsHandler() http.HandlerFunc {
 		}
 		log.Infof("Scraping target %s", target)
 
-		var targetCredential *Credential
+		var deviceConfig *DeviceConfig
 		var err error
-		if targetCredential, err = sc.CredentialsForTarget(target); err != nil {
+		if deviceConfig, err = sc.DeviceConfigForTarget(target); err != nil {
 			log.Fatalf("Error getting credentialfor target %s file: %s", target, err)
 		}
 
-		collector := collector.NewPanosCollector(ctx, target, targetCredential.Username, targetCredential.Password)
+		collector := collector.NewPanosCollector(ctx, target, deviceConfig.Username, deviceConfig.Password)
 		registry.MustRegister(collector)
 		gatherers := prometheus.Gatherers{
 			prometheus.DefaultGatherer,
