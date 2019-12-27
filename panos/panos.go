@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/parnurzeal/gorequest"
 	"strings"
+	"context"
 )
 
 // PaloAlto is a container for our session state. It also holds information about the device
@@ -347,4 +348,69 @@ func (p *PaloAlto) GetInterfaceCounterData() (InterfaceCounterResponse, error) {
 		return interfaceCounterResponse, err
 	}
 	return interfaceCounterResponse, nil
+}
+
+// data processor resource utilization
+
+type CPULoadAverageEntryData struct {
+	CoreID string  `xml:"coreid"`
+	Value  float64 `xml:"value"`
+}
+
+type CPULoadMaximumEntryData struct {
+	CoreID string  `xml:"coreid"`
+	Value  float64 `xml:"value"`
+}
+
+type CPULoadByGroupData struct {
+	Pktlog_forwarding string `xml:"pktlog_forwarding,omitempty"`
+	Flow_lookup       string `xml:"flow_lookup,omitempty"`
+	Flow_fastpath     string `xml:"flow_fastpath,omitempty"`
+	Flow_np           string `xml:"flow_np,omitempty"`
+	Aho_result        string `xml:"aho_result,omitempty"`
+	Zip_result        string `xml:"zip_result,omitempty"`
+	Flow_host         string `xml:"flow_host,omitempty"`
+	Flow_forwarding   string `xml:"flow_forwarding,omitempty"`
+	Module_internal   string `xml:"module_internal,omitempty"`
+	Flow_ctrl         string `xml:"flow_ctrl,omitempty"`
+	Lwm               string `xml:"lwm,omitempty"`
+	Flow_slowpath     string `xml:"flow_slowpath,omitempty"`
+	Dfa_result        string `xml:"dfa_result,omitempty"`
+	Nac_result        string `xml:"nac_result,omitempty"`
+	Flow_mgmt         string `xml:'flow_mgmt,omitempty'`
+}
+type ResourceUtilizationEntryData struct {
+	Name  string  `xml:name`
+	Value float64 `xml:value`
+}
+
+
+type DataProcessorResourceUtilData struct {
+	CPULoadAverage         []*CPULoadAverageEntryData         `xml:"cpu-load-average>entry"`
+	CPULoadByGroup 				 *CPULoadByGroupData `xml:"task"`
+	CPULoadMaximum         []*CPULoadMaximumEntryData         `xml:"cpu-load-maximum>entry"`
+	ResourceUtilization    []*ResourceUtilizationEntryData    `xml:"resource-utilization>entry"`
+}
+// in most cases, the system only have 1 data processor, and use interval second to grabe the resource util data
+type DataProcessorsResourceUtilResponse struct {
+	XMLName xml.Name `xml:"response"`
+	Status  string   `xml:"status,attr"`
+	Result  struct {
+		DataProcessorsResourceUtil DataProcessorResourceUtilData `xml:"resource-monitor>data-processors>dp0>second"` 
+	} `xml:"result"`
+}
+
+func (p *PaloAlto) GetDataProcessorsResourceUtilData(ctx context.Context) (DataProcessorsResourceUtilResponse, error) {
+	defer ctx.Done()
+	var dataProcessorsResourceUtilResponse DataProcessorsResourceUtilResponse
+	command := "<show><running><resource-monitor><second><last>1</last></second></resource-monitor></running></show>"
+	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
+	if errs != nil {
+		return dataProcessorsResourceUtilResponse, errs[0]
+	}
+	err := xml.Unmarshal([]byte(res), &dataProcessorsResourceUtilResponse)
+	if err != nil {
+		return dataProcessorsResourceUtilResponse, err
+	}
+	return dataProcessorsResourceUtilResponse, nil
 }
