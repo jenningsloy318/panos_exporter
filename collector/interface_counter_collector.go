@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	InterfaceCounterSubsystem  = "interface"
+	InterfaceCounterSubsystem  = "interface_counter"
 	InterfaceCounterLabelNames = []string{"name", "domain", "category"}
 )
 
@@ -51,10 +51,10 @@ func (i *InterfaceCounterCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (i *InterfaceCounterCollector) Collect(ch chan<- prometheus.Metric) {
-	_, iCancel := context.WithCancel(i.ctx)
+	iContext, iCancel := context.WithCancel(i.ctx)
 	defer iCancel()
 	i.metrics = map[string]InterfaceCounterMetric{}
-	interfaceCounterData, err := i.panosClient.GetInterfaceCounterData()
+	interfaceCounterData, err := i.panosClient.GetInterfaceCounterData(iContext)
 
 	if err != nil {
 		log.Infof("Error getting Interface counter data, %s", err)

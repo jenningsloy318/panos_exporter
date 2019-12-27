@@ -252,7 +252,9 @@ type GlobalCounterResponse struct {
 	} `xml:"result"`
 }
 
-func (p *PaloAlto) GetGlobalCounterData() (GlobalCounterResponse, error) {
+func (p *PaloAlto) GetGlobalCounterData(ctx context.Context) (GlobalCounterResponse, error) {
+	_,gCancel := context.WithCancel(ctx) 
+	defer gCancel()
 	var globalCounterResponse GlobalCounterResponse
 	command := "<show><counter><global></global></counter></show>"
 	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
@@ -335,7 +337,9 @@ type InterfaceCounterResponse struct {
 	} `xml:"result"`
 }
 
-func (p *PaloAlto) GetInterfaceCounterData() (InterfaceCounterResponse, error) {
+func (p *PaloAlto) GetInterfaceCounterData(ctx context.Context) (InterfaceCounterResponse, error) {
+	_,iCancel := context.WithCancel(ctx) 
+	defer iCancel()
 	var interfaceCounterResponse InterfaceCounterResponse
 	command := "<show><counter><interface>all</interface></counter></show>"
 	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
@@ -401,7 +405,8 @@ type DataProcessorsResourceUtilResponse struct {
 }
 
 func (p *PaloAlto) GetDataProcessorsResourceUtilData(ctx context.Context) (DataProcessorsResourceUtilResponse, error) {
-	defer ctx.Done()
+	_,dCancel := context.WithCancel(ctx) 
+	defer dCancel()
 	var dataProcessorsResourceUtilResponse DataProcessorsResourceUtilResponse
 	command := "<show><running><resource-monitor><second><last>1</last></second></resource-monitor></running></show>"
 	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()

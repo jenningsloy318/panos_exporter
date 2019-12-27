@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	GlobalCounterSubsystem  = "global"
+	GlobalCounterSubsystem  = "global_counter"
 	GlobalCounterLabelNames = []string{"category", "rate", "aspect", "id", "severity", "data_processor", "domain"}
 )
 
@@ -50,13 +50,13 @@ func (g *GlobalCounterCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (g *GlobalCounterCollector) Collect(ch chan<- prometheus.Metric) {
-	_, gCancel := context.WithCancel(g.ctx)
+	gContext, gCancel := context.WithCancel(g.ctx)
 	defer gCancel()
 
 	//initialize metrics map allows later assignment
 	g.metrics = map[string]GlobalCounterMetric{}
 
-	globalCounterData, err := g.panosClient.GetGlobalCounterData()
+	globalCounterData, err := g.panosClient.GetGlobalCounterData(gContext)
 	if err != nil {
 		log.Infof("Error getting global counter data, %s", err)
 		return
