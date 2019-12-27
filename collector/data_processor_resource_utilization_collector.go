@@ -59,14 +59,13 @@ func (d *DataProcessorResourceUtilCollector) Collect(ch chan<- prometheus.Metric
 		return
 	}
 
-
 	DataProcessorResourceUtilDataContent := DataProcessorResourceUtilData.Result.DataProcessorsResourceUtil
 
 	// data plane load average
 	cpuLoadAverageEntries := DataProcessorResourceUtilDataContent.CPULoadAverage
 	for _, entry := range cpuLoadAverageEntries {
-		labelNames := []string{"domain", "coreid","dp"}
-		labelValues := []string{"data_plane", entry.CoreID,"dp0"}
+		labelNames := []string{"domain", "coreid", "dp"}
+		labelValues := []string{"data_plane", entry.CoreID, "dp0"}
 		metricName := "cpu_load_average"
 		metricDesc := fmt.Sprintf("data plane cpu load average")
 		newDataProcessorResourceUtilMetric := DataProcessorResourceUtilMetric{
@@ -84,8 +83,8 @@ func (d *DataProcessorResourceUtilCollector) Collect(ch chan<- prometheus.Metric
 	// data plane load maximum
 	cpuLoadMaximumEntries := DataProcessorResourceUtilDataContent.CPULoadMaximum
 	for _, entry := range cpuLoadMaximumEntries {
-		labelNames := []string{"domain", "coreid","dp"}
-		labelValues := []string{"data_plane", entry.CoreID,"dp0"}
+		labelNames := []string{"domain", "coreid", "dp"}
+		labelValues := []string{"data_plane", entry.CoreID, "dp0"}
 		metricName := "cpu_load_maximum"
 		metricDesc := fmt.Sprintf("data plane cpu load maximum")
 		newDataProcessorResourceUtilMetric := DataProcessorResourceUtilMetric{
@@ -100,9 +99,7 @@ func (d *DataProcessorResourceUtilCollector) Collect(ch chan<- prometheus.Metric
 		ch <- prometheus.MustNewConstMetric(newDataProcessorResourceUtilMetric.desc, prometheus.GaugeValue, entry.Value, labelValues...)
 	}
 
-
-
-		// data plane load  By Group
+	// data plane load  By Group
 
 	// data plane resource utilization
 
