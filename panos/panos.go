@@ -2,12 +2,12 @@
 package panos
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/xml"
 	"fmt"
 	"github.com/parnurzeal/gorequest"
 	"strings"
-	"context"
 )
 
 // PaloAlto is a container for our session state. It also holds information about the device
@@ -253,7 +253,7 @@ type GlobalCounterResponse struct {
 }
 
 func (p *PaloAlto) GetGlobalCounterData(ctx context.Context) (GlobalCounterResponse, error) {
-	_,gCancel := context.WithCancel(ctx) 
+	_, gCancel := context.WithCancel(ctx)
 	defer gCancel()
 	var globalCounterResponse GlobalCounterResponse
 	command := "<show><counter><global></global></counter></show>"
@@ -338,7 +338,7 @@ type InterfaceCounterResponse struct {
 }
 
 func (p *PaloAlto) GetInterfaceCounterData(ctx context.Context) (InterfaceCounterResponse, error) {
-	_,iCancel := context.WithCancel(ctx) 
+	_, iCancel := context.WithCancel(ctx)
 	defer iCancel()
 	var interfaceCounterResponse InterfaceCounterResponse
 	command := "<show><counter><interface>all</interface></counter></show>"
@@ -388,24 +388,24 @@ type ResourceUtilizationEntryData struct {
 	Value float64 `xml:value`
 }
 
-
 type DataProcessorResourceUtilData struct {
-	CPULoadAverage         []*CPULoadAverageEntryData         `xml:"cpu-load-average>entry"`
-	CPULoadByGroup 				 *CPULoadByGroupData `xml:"task"`
-	CPULoadMaximum         []*CPULoadMaximumEntryData         `xml:"cpu-load-maximum>entry"`
-	ResourceUtilization    []*ResourceUtilizationEntryData    `xml:"resource-utilization>entry"`
+	CPULoadAverage      []*CPULoadAverageEntryData      `xml:"cpu-load-average>entry"`
+	CPULoadByGroup      *CPULoadByGroupData             `xml:"task"`
+	CPULoadMaximum      []*CPULoadMaximumEntryData      `xml:"cpu-load-maximum>entry"`
+	ResourceUtilization []*ResourceUtilizationEntryData `xml:"resource-utilization>entry"`
 }
+
 // in most cases, the system only have 1 data processor, and use interval second to grabe the resource util data
 type DataProcessorsResourceUtilResponse struct {
 	XMLName xml.Name `xml:"response"`
 	Status  string   `xml:"status,attr"`
 	Result  struct {
-		DataProcessorsResourceUtil DataProcessorResourceUtilData `xml:"resource-monitor>data-processors>dp0>second"` 
+		DataProcessorsResourceUtil DataProcessorResourceUtilData `xml:"resource-monitor>data-processors>dp0>second"`
 	} `xml:"result"`
 }
 
 func (p *PaloAlto) GetDataProcessorsResourceUtilData(ctx context.Context) (DataProcessorsResourceUtilResponse, error) {
-	_,dCancel := context.WithCancel(ctx) 
+	_, dCancel := context.WithCancel(ctx)
 	defer dCancel()
 	var dataProcessorsResourceUtilResponse DataProcessorsResourceUtilResponse
 	command := "<show><running><resource-monitor><second><last>1</last></second></resource-monitor></running></show>"
@@ -418,4 +418,27 @@ func (p *PaloAlto) GetDataProcessorsResourceUtilData(ctx context.Context) (DataP
 		return dataProcessorsResourceUtilResponse, err
 	}
 	return dataProcessorsResourceUtilResponse, nil
+}
+
+// in most cases, the system only have 1 data processor, and use interval second to grabe the resource util data
+type SystemResourceUtilResponse struct {
+	XMLName xml.Name `xml:"response"`
+	Status  string   `xml:"status,attr"`
+	Result  string   `xml:"result"`
+}
+
+func (p *PaloAlto) GetSystemsResourceUtilData(ctx context.Context) (SystemResourceUtilResponse, error) {
+	_, sCancel := context.WithCancel(ctx)
+	defer sCancel()
+	var systemResourceUtilResponse SystemResourceUtilResponse
+	command := "<show><system><resources></resources></system></show>"
+	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
+	if errs != nil {
+		return systemResourceUtilResponse, errs[0]
+	}
+	err := xml.Unmarshal([]byte(res), &systemResourceUtilResponse)
+	if err != nil {
+		return systemResourceUtilResponse, err
+	}
+	return systemResourceUtilResponse, nil
 }
