@@ -95,7 +95,7 @@ func (i *InterfaceCounterCollector) Collect(ch chan<- prometheus.Metric) {
 	// parse interface hw counters
 	HWCounterDataEntries := interfaceCounterData.Result.HwCounter.HwCountersData
 	for _, entry := range HWCounterDataEntries {
-		labelValues := []string{entry.Name, "interface", "hw"}
+		labelValues := []string{entry.Name, "interface_counter", "hw"}
 
 		valueOfEntry := reflect.ValueOf(&entry).Elem()
 		typeOfEntry := valueOfEntry.Type()

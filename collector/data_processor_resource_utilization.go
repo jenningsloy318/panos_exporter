@@ -65,8 +65,8 @@ func (d *DataProcessorResourceUtilCollector) Collect(ch chan<- prometheus.Metric
 	// data plane load average
 	cpuLoadAverageEntries := DataProcessorResourceUtilDataContent.CPULoadAverage
 	for _, entry := range cpuLoadAverageEntries {
-		labelNames := []string{"domain", "coreid"}
-		labelValues := []string{"data_plane", entry.CoreID}
+		labelNames := []string{"domain", "coreid","dp"}
+		labelValues := []string{"data_plane", entry.CoreID,"dp0"}
 		metricName := "cpu_load_average"
 		metricDesc := fmt.Sprintf("data plane cpu load average")
 		newDataProcessorResourceUtilMetric := DataProcessorResourceUtilMetric{
@@ -84,8 +84,8 @@ func (d *DataProcessorResourceUtilCollector) Collect(ch chan<- prometheus.Metric
 	// data plane load maximum
 	cpuLoadMaximumEntries := DataProcessorResourceUtilDataContent.CPULoadMaximum
 	for _, entry := range cpuLoadMaximumEntries {
-		labelNames := []string{"domain", "coreid"}
-		labelValues := []string{"data_plane", entry.CoreID}
+		labelNames := []string{"domain", "coreid","dp"}
+		labelValues := []string{"data_plane", entry.CoreID,"dp0"}
 		metricName := "cpu_load_maximum"
 		metricDesc := fmt.Sprintf("data plane cpu load maximum")
 		newDataProcessorResourceUtilMetric := DataProcessorResourceUtilMetric{

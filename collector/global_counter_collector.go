@@ -65,7 +65,7 @@ func (g *GlobalCounterCollector) Collect(ch chan<- prometheus.Metric) {
 	globalCounterDataEntries := globalCounterData.Result.GlobalCounter.GlobalCountersData.GlobalCounterEntriesData
 
 	for _, entry := range globalCounterDataEntries {
-		labelValues := []string{entry.Category, entry.Rate, entry.Aspect, entry.ID, entry.Severity, dp, "global"}
+		labelValues := []string{entry.Category, entry.Rate, entry.Aspect, entry.ID, entry.Severity, dp, "global_counter"}
 		metricName := entry.Name
 
 		metricDesc := fmt.Sprintf("global counter for %s", entry.Desc)
