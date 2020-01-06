@@ -40,6 +40,11 @@ add panos_exporter job conif as following
         - target_label: __address__
           replacement: localhost:9654  ### the address of the panos_exporter address
   ```
+## used opeeration commands for metrics
+- global_counter_collector: `<show><counter><global></global></counter></show>`
+- interface_counter_collector: `<show><counter><interface>all</interface></counter></show>`
+- system_resource_utilization_collector: `<show><system><resources></resources></system></show>`
+- data_processor_resource_utilization_collector: `<show><running><resource-monitor><second><last>1</last></second></resource-monitor></running></show>`
 
 ## Support devices
 - PA-3220(8.1.7)
