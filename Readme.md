@@ -1,4 +1,4 @@
-panos_exporter
+Panos_exporter
 ---
 panos_exporter is an exporter to scape metrics from Paloalto NGFW api to get its current status and expose as prometheus metrics; and it can be used to montior its running statuss 
 
@@ -22,7 +22,7 @@ curl http://<panos_exporter host>:9654/panos?target=10.36.48.15
 
 ```
 
-## prometheus job conf
+## Prometheus Configuration
 add panos_exporter job conif as following
   ```yaml
     - job_name: 'panos_exporter'
@@ -40,7 +40,7 @@ add panos_exporter job conif as following
         - target_label: __address__
           replacement: localhost:9654  ### the address of the panos_exporter address
   ```
-## used opeeration commands for metrics
+## API Commands for metrics
 - global_counter_collector: `<show><counter><global></global></counter></show>`
 - interface_counter_collector: `<show><counter><interface>all</interface></counter></show>`
 - system_resource_utilization_collector: `<show><system><resources></resources></system></show>`
