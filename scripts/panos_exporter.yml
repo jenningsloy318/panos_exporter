@@ -1,0 +1,4 @@
+devices:
+    10.36.48.15:
+      username: user
+      password: pass

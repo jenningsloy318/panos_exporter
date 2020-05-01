@@ -1,0 +1,11 @@
+[Unit]
+Description=panos_exporter  service
+
+[Service]
+ExecStart=/usr/bin/panos_exporter --config.file=/etc/prometheus/panos_exporter.yml 
+Restart=always
+RestartSec=2s
+StartLimitInterval=0
+KillMode=process
+[Install]
+WantedBy=multi-user.target

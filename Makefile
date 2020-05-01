@@ -11,8 +11,10 @@ REVERSION ?=$(shell git log -1 --pretty="%H")
 BRANCH ?=$(shell git rev-parse --abbrev-ref HEAD)
 TIME ?=$(shell date --rfc-3339=seconds)
 HOST ?=$(shell hostname)  
+DOCKER-CLIENT = /usr/bin/docker
 
-all: deps vet fmt style staticcheck unused  build  buildrpm test
+all:  fmt style  build  docker-build rpm  docker-rpm
+
 
  
 style:
@@ -29,28 +31,21 @@ check_license:
                exit 1; \
        fi
 
-test-short:
-	@echo ">> running short tests"
-	$(GO) test -short $(pkgs)
-
-test:
-	@echo ">> running all tests"
-	$(GO) test -race $(pkgs)
-
-format:
-	@echo ">> formatting code"
-	$(GO) fmt $(pkgs)
-
-
-staticcheck: | $(STATICCHECK)
-	@echo ">> running staticcheck"
-	$(STATICCHECK) -ignore "$(STATICCHECK_IGNORE)" $(pkgs)
-
-
 build: | 
 	@echo ">> building binaries"
 	$(GO) build -o build/panos_exporter -ldflags  '-X "main.Version=$(VERSION)" -X  "main.BuildRevision=$(REVERSION)" -X  "main.BuildBranch=$(BRANCH)" -X "main.BuildTime=$(TIME)" -X "main.BuildHost=$(HOSTNAME)"'
 
+docker-build:
+	@echo ">> building binaries in docker container"
+	$(DOCKER-CLIENT) run -v `pwd`:/go/src/github.com/jenningsloy318/panos_exporter  -w /go/src/github.com/jenningsloy318/panos_exporter docker.io/jenningsloy318/prom-builder  make build
+
+rpm: | build
+	@echo ">> build rpm package"
+	$(RPM)
+
+docker-rpm:
+	@echo ">> build rpm package in docker container"
+	$(DOCKER-CLIENT) run -v `pwd`:/go/src/github.com/jenningsloy318/panos_exporter  -w /go/src/github.com/jenningsloy318/panos_exporter docker.io/jenningsloy318/prom-builder  make rpm
 
 
 
@@ -59,10 +54,7 @@ fmt:
 	$(GOFMT) -w $$(find . -path ./vendor -prune -o -name '*.go' -print) 
 
 
-$(STATICCHECK):
-	GOOS= GOARCH= $(GO) get -u honnef.co/go/tools/cmd/staticcheck
+clean:
+	rm -rf $(BIN_DIR)
 
-$(GOVENDOR):
-	GOOS= GOARCH= $(GO) get -u github.com/kardianos/govendor
-
-.PHONY: all style check_license format build test  assets tarball fmt    $(STATICCHECK) 
+.PHONY: all style check_license  build  docker-build rpm docker-rpm fmt 

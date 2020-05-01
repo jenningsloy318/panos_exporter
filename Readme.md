@@ -23,7 +23,7 @@ curl http://<panos_exporter host>:9654/panos?target=10.36.48.15
 ```
 
 ## Prometheus Configuration
-add panos_exporter job conif as following
+add panos_exporter job config as following
   ```yaml
     - job_name: 'panos_exporter'
       metrics_path: /panos
