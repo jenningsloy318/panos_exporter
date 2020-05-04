@@ -11,7 +11,7 @@ REVERSION ?=$(shell git log -1 --pretty="%H")
 BRANCH ?=$(shell git rev-parse --abbrev-ref HEAD)
 TIME ?=$(shell date --rfc-3339=seconds)
 HOST ?=$(shell hostname)  
-DOCKER-CLIENT = /usr/bin/docker
+DOCKER := $(shell { command -v podman || command -v docker; } 2>/dev/null)
 
 all:  fmt style  build  docker-build rpm  docker-rpm
 
@@ -37,7 +37,7 @@ build: |
 
 docker-build:
 	@echo ">> building binaries in docker container"
-	$(DOCKER-CLIENT) run -v `pwd`:/go/src/github.com/jenningsloy318/panos_exporter  -w /go/src/github.com/jenningsloy318/panos_exporter docker.io/jenningsloy318/prom-builder  make build
+	$(DOCKER) run -v `pwd`:/go/src/github.com/jenningsloy318/panos_exporter  -w /go/src/github.com/jenningsloy318/panos_exporter docker.io/jenningsloy318/prom-builder  make build
 
 rpm: | build
 	@echo ">> build rpm package"
@@ -45,7 +45,7 @@ rpm: | build
 
 docker-rpm:
 	@echo ">> build rpm package in docker container"
-	$(DOCKER-CLIENT) run -v `pwd`:/go/src/github.com/jenningsloy318/panos_exporter  -w /go/src/github.com/jenningsloy318/panos_exporter docker.io/jenningsloy318/prom-builder  make rpm
+	$(DOCKER) run -v `pwd`:/go/src/github.com/jenningsloy318/panos_exporter  -w /go/src/github.com/jenningsloy318/panos_exporter docker.io/jenningsloy318/prom-builder  make rpm
 
 
 
