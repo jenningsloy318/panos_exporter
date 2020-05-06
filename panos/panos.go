@@ -6,8 +6,11 @@ import (
 	"crypto/tls"
 	"encoding/xml"
 	"fmt"
-	"github.com/parnurzeal/gorequest"
+	"net/url"
 	"strings"
+	"time"
+
+	"github.com/parnurzeal/gorequest"
 )
 
 // PaloAlto is a container for our session state. It also holds information about the device
@@ -458,10 +461,10 @@ func (p *PaloAlto) CreateLog(ctx context.Context) (*LogJobCreateResponse, error)
 	defer sCancel()
 	var logJobCreateResponse LogJobCreateResponse
 
-	currentTime :=time.Now() 
-	formattedTime := fmt.Sprintf("%d/%02d/%02d %02d:%02d:%02d",	currentTime.Year(), currentTime.Month(), currentTime.Day(),	currentTime.Hour(), currentTime.Minute(), currentTime.Second())
+	currentTime := time.Now()
+	formattedCurentTime := fmt.Sprintf("%d/%02d/%02d %02d:%02d:%02d", currentTime.Year(), currentTime.Month(), currentTime.Day(), currentTime.Hour(), currentTime.Minute(), currentTime.Second())
 
-	command := fmt.Spintf("query=( receive_time eq %s",formattedTime)
+	command := fmt.Spintf("query=( receive_time eq %s", formattedCurentTime)
 	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, url.QueryEscape(s))).End()
 
 }
@@ -490,7 +493,7 @@ type LogEntry struct {
 
 type LogEntryData struct {
 	Domain              string `xml:"domain,omitempty"`
-	ReceiveTime        string `xml:"receive_time,omitempty"`
+	ReceiveTime         string `xml:"receive_time,omitempty"`
 	Serial              string `xml:"serial,omitempty"`
 	Seqno               string `xml:"seqno,omitempty"`
 	ActionFlags         string `xml:"actionflags,omitempty"`
