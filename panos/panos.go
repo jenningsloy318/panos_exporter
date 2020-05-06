@@ -442,3 +442,131 @@ func (p *PaloAlto) GetSystemsResourceUtilData(ctx context.Context) (SystemResour
 	}
 	return systemResourceUtilResponse, nil
 }
+
+type LogJobCreateResponse struct {
+	XMLName xml.Name `xml:"response"`
+	Status  string   `xml:"status,attr"`
+	Code    string   `xml:"code,attr"`
+	Result  struct {
+		Msg   string `xml:"msg>line,omitempty"`
+		JobID string `xml:"job"`
+	} `xml:"result"`
+}
+
+func (p *PaloAlto) CreateLog(ctx context.Context) (*LogJobCreateResponse, error) {
+	_, sCancel := context.WithCancel(ctx)
+	defer sCancel()
+	var logJobCreateResponse LogJobCreateResponse
+
+	currentTime :=time.Now() 
+	formattedTime := fmt.Sprintf("%d/%02d/%02d %02d:%02d:%02d",	currentTime.Year(), currentTime.Month(), currentTime.Day(),	currentTime.Hour(), currentTime.Minute(), currentTime.Second())
+
+	command := fmt.Spintf("query=( receive_time eq %s",formattedTime)
+	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, url.QueryEscape(s))).End()
+
+}
+
+type LogContentResponse struct {
+	XMLName xml.Name `xml:"response"`
+	Status  string   `xml:"status,attr"`
+	Code    string   `xml:"code,attr"`
+	Result  struct {
+		Job  LogJob     `xml:"job,omitempty"`
+		Logs []LogEntry `xml:"log>logs"`
+	} `xml:"result"`
+}
+
+type LogJobAttr struct {
+	Tenq   string `xml:"tenq"`
+	Tdeq   string `xml:"tdeq"`
+	Tlast  string `xml:"tlast"`
+	Status string `xml:"status"`
+	ID     string `xml:"id"`
+}
+
+type LogEntry struct {
+	EntryData LogEntryData `xml:"entry"`
+}
+
+type LogEntryData struct {
+	Domain              string `xml:"domain,omitempty"`
+	ReceiveTime        string `xml:"receive_time,omitempty"`
+	Serial              string `xml:"serial,omitempty"`
+	Seqno               string `xml:"seqno,omitempty"`
+	ActionFlags         string `xml:"actionflags,omitempty"`
+	IsLoggingService    bool   `xml:"is-logging-service,omitempty"`
+	Type                string `xml:"type,omitempty"`
+	Subtype             string `xml:"subtype,omitempty"`
+	ConfigVer           string `xml:"config_ver,omitempty"`
+	TimeGenerated       string `xml:"time_generated,omitempty"`
+	SRC                 string `xml:"src,omitempty"`
+	DST                 string `xml:"dst,omitempty"`
+	Rule                string `xml:"rule,omitempty"`
+	SRCLoc              string `xml:"srcloc,omitempty"`
+	DSTLoc              string `xml:"dstloc,omitempty"`
+	App                 string `xml:"app,omitempty"`
+	Vsys                string `xml:"vsys,omitempty"`
+	From                string `xml:"from,omitempty"`
+	To                  string `xml:"to,omitempty"`
+	InboundIF           string `xml:"inbound_if,omitempty"`
+	OutboundIF          string `xml:"outbound_if,omitempty"`
+	LogSet              string `xml:"logset,omitempty"`
+	TimeReceived        string `xml:"time_received,omitempty"`
+	SessionID           string `xml:"sessionid,omitempty"`
+	Repeatcnt           string `xml:"repeatcnt,omitempty"`
+	Sport               string `xml:"sport,omitempty"`
+	Dport               string `xml:"dport,omitempty"`
+	NatsPort            string `xml:"natsport,omitempty"`
+	NatdPort            string `xml:"natdport,omitempty"`
+	Flags               string `xml:"flags,omitempty"`
+	FlagPcap            string `xml:"flag-pcap,omitempty"`
+	FlagFlagged         string `xml:"flag-flagged,omitempty"`
+	FlagProxy           string `xml:"flag-proxy,omitempty"`
+	FlagUrlDenied       string `xml:"flag-url-denied,omitempty"`
+	FlagNat             string `xml:"flag-nat,omitempty"`
+	CaptivePortal       string `xml:"captive-portal,omitempty"`
+	NonStdDport         string `xml:"non-std-dport,omitempty"`
+	Transaction         string `xml:"transaction,omitempty"`
+	PbfC2s              string `xml:"pbf-c2s,omitempty"`
+	PbfS2c              string `xml:"pbf-s2c,omitempty"`
+	TemporaryMatch      string `xml:"temporary-match,omitempty"`
+	SymReturn           string `xml:"sym-return,omitempty"`
+	DecryptMirror       string `xml:"decrypt-mirror,omitempty"`
+	CredentialDetected  string `xml:"credential-detected,omitempty"`
+	FlagMptcpSet        string `xml:"flag-mptcp-set,omitempty"`
+	FlagTunnelInspected string `xml:"flag-tunnel-inspected,omitempty"`
+	FlagReconExcluded   string `xml:"flag-recon-excluded,omitempty"`
+	FlagWfChannel       string `xml:"flag-wf-channel,omitempty"`
+	Proto               string `xml:"proto,omitempty"`
+	Action              string `xml:"action,omitempty"`
+	Tunnel              string `xml:"tunnel,omitempty"`
+	Tpadding            string `xml:"tpadding,omitempty"`
+	Cpadding            string `xml:"cpadding,omitempty"`
+	DgHierLevel1        string `xml:"dg_hier_level_1,omitempty"`
+	DgHierLevel2        string `xml:"dg_hier_level_2,omitempty"`
+	DgHierLevel3        string `xml:"dg_hier_level_3,omitempty"`
+	DgHierLevel4        string `xml:"dg_hier_level_4,omitempty"`
+	Device_name         string `xml:"device_name,omitempty"`
+	VsysID              string `xml:"vsys_id,omitempty"`
+	TunnelidImsi        string `xml:"tunnelid_imsi,omitempty"`
+	ParentSessionID     string `xml:"parent_session_id,omitempty"`
+	ThreatID            string `xml:"threatid,omitempty"`
+	Tid                 string `xml:"tid,omitempty"`
+	ReportID            string `xml:"reportid,omitempty"`
+	Category            string `xml:"category,omitempty"`
+	Severity            string `xml:"severity,omitempty"`
+	Direction           string `xml:"direction,omitempty"`
+	UrlIdx              string `xml:"url_idx,omitempty"`
+	Padding             string `xml:"padding,omitempty"`
+	PcapID              string `xml:"pcap_id,omitempty"`
+	Contentver          string `xml:"contentver,omitempty"`
+	SigFlags            string `xml:"sig_flags,omitempty"`
+	ThrCategory         string `xml:"thr_category,omitempty"`
+	AssocID             string `xml:"assoc_id,omitempty"`
+	PPID                string `xml:"ppid,omitempty"`
+	Misc                string `xml:"misc,omitempty"`
+	TunnelID            string `xml:"tunnelid,omitempty"`
+	Imsi                string `xml:"imsi,omitempty"`
+	MonitorTag          string `xml:"monitortag,omitempty"`
+	Imei                string `xml:"imei,omitempty"`
+}
