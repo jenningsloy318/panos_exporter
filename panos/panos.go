@@ -446,7 +446,7 @@ func (p *PaloAlto) GetSystemsResourceUtilData(ctx context.Context) (SystemResour
 	return systemResourceUtilResponse, nil
 }
 
-type LogJobCreateResponse struct {
+type LogRetrieveJobCreateResponse struct {
 	XMLName xml.Name `xml:"response"`
 	Status  string   `xml:"status,attr"`
 	Code    string   `xml:"code,attr"`
@@ -456,17 +456,26 @@ type LogJobCreateResponse struct {
 	} `xml:"result"`
 }
 
-func (p *PaloAlto) CreateLog(ctx context.Context) (*LogJobCreateResponse, error) {
+func (p *PaloAlto) CreateLogRetrieveJob(ctx context.Context) (jobID string, error) {
 	_, sCancel := context.WithCancel(ctx)
 	defer sCancel()
-	var logJobCreateResponse LogJobCreateResponse
+	var logRetrieveJobCreateResponse LogRetrieveJobCreateResponse
 
 	currentTime := time.Now()
 	formattedCurentTime := fmt.Sprintf("%d/%02d/%02d %02d:%02d:%02d", currentTime.Year(), currentTime.Month(), currentTime.Day(), currentTime.Hour(), currentTime.Minute(), currentTime.Second())
 
 	command := fmt.Spintf("query=( receive_time eq %s", formattedCurentTime)
 	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, url.QueryEscape(s))).End()
+	if errs != nil {
+		return "", errs[0]
+	}
+	err := xml.Unmarshal([]byte(res), &logRetrieveJobCreateResponse)
+	if err != nil {
+		return "", err
+	}
 
+	jobID = logRetrieveJobCreateResponse.Result.JobID
+	return jobID,nil
 }
 
 type LogContentResponse struct {
@@ -475,16 +484,16 @@ type LogContentResponse struct {
 	Code    string   `xml:"code,attr"`
 	Result  struct {
 		Job  LogJob     `xml:"job,omitempty"`
-		Logs []LogEntry `xml:"log>logs"`
+		Logs []LogEntry `xml:"log>logs,omitempty"`
 	} `xml:"result"`
 }
 
 type LogJobAttr struct {
-	Tenq   string `xml:"tenq"`
-	Tdeq   string `xml:"tdeq"`
-	Tlast  string `xml:"tlast"`
-	Status string `xml:"status"`
-	ID     string `xml:"id"`
+	Tenq   string `xml:"tenq,omitempty"`
+	Tdeq   string `xml:"tdeq,omitempty"`
+	Tlast  string `xml:"tlast,omitempty"`
+	Status string `xml:"status,omitempty"`
+	ID     string `xml:"id,omitempty"`
 }
 
 type LogEntry struct {
@@ -522,24 +531,24 @@ type LogEntryData struct {
 	NatsPort            string `xml:"natsport,omitempty"`
 	NatdPort            string `xml:"natdport,omitempty"`
 	Flags               string `xml:"flags,omitempty"`
-	FlagPcap            string `xml:"flag-pcap,omitempty"`
-	FlagFlagged         string `xml:"flag-flagged,omitempty"`
-	FlagProxy           string `xml:"flag-proxy,omitempty"`
-	FlagUrlDenied       string `xml:"flag-url-denied,omitempty"`
-	FlagNat             string `xml:"flag-nat,omitempty"`
-	CaptivePortal       string `xml:"captive-portal,omitempty"`
-	NonStdDport         string `xml:"non-std-dport,omitempty"`
-	Transaction         string `xml:"transaction,omitempty"`
-	PbfC2s              string `xml:"pbf-c2s,omitempty"`
-	PbfS2c              string `xml:"pbf-s2c,omitempty"`
-	TemporaryMatch      string `xml:"temporary-match,omitempty"`
-	SymReturn           string `xml:"sym-return,omitempty"`
-	DecryptMirror       string `xml:"decrypt-mirror,omitempty"`
-	CredentialDetected  string `xml:"credential-detected,omitempty"`
-	FlagMptcpSet        string `xml:"flag-mptcp-set,omitempty"`
-	FlagTunnelInspected string `xml:"flag-tunnel-inspected,omitempty"`
-	FlagReconExcluded   string `xml:"flag-recon-excluded,omitempty"`
-	FlagWfChannel       string `xml:"flag-wf-channel,omitempty"`
+	FlagPcap            bool `xml:"flag-pcap,omitempty"`
+	FlagFlagged         bool `xml:"flag-flagged,omitempty"`
+	FlagProxy           bool `xml:"flag-proxy,omitempty"`
+	FlagUrlDenied       bool `xml:"flag-url-denied,omitempty"`
+	FlagNat             bool `xml:"flag-nat,omitempty"`
+	CaptivePortal       bool `xml:"captive-portal,omitempty"`
+	NonStdDport         bool `xml:"non-std-dport,omitempty"`
+	Transaction         bool `xml:"transaction,omitempty"`
+	PbfC2s              bool `xml:"pbf-c2s,omitempty"`
+	PbfS2c              bool `xml:"pbf-s2c,omitempty"`
+	TemporaryMatch      bool `xml:"temporary-match,omitempty"`
+	SymReturn           bool `xml:"sym-return,omitempty"`
+	DecryptMirror       bool `xml:"decrypt-mirror,omitempty"`
+	CredentialDetected  bool `xml:"credential-detected,omitempty"`
+	FlagMptcpSet        bool `xml:"flag-mptcp-set,omitempty"`
+	FlagTunnelInspected bool `xml:"flag-tunnel-inspected,omitempty"`
+	FlagReconExcluded   bool `xml:"flag-recon-excluded,omitempty"`
+	FlagWfChannel       bool `xml:"flag-wf-channel,omitempty"`
 	Proto               string `xml:"proto,omitempty"`
 	Action              string `xml:"action,omitempty"`
 	Tunnel              string `xml:"tunnel,omitempty"`
@@ -572,4 +581,32 @@ type LogEntryData struct {
 	Imsi                string `xml:"imsi,omitempty"`
 	MonitorTag          string `xml:"monitortag,omitempty"`
 	Imei                string `xml:"imei,omitempty"`
+}
+
+
+func (p *PaloAlto) RetrieveLogContent(ctx context.Context) (LogContentResponse, error) {
+	jobID , err := p.CreateLogRetrieveJob(ctx)
+
+	if err !=nil {
+		return nil,fmt.Sprintf("Error when getting threat log, error:%v",err)
+	}
+	_, sCancel := context.WithCancel(ctx)
+	defer sCancel()
+
+	var logContentResponse LogContentResponse
+
+	command := fmt.Spintf("query=( receive_time eq %s", formattedCurentTime)
+	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=log&action=get&job-id=%s", p.URI, p.Key,jobID)).End()
+	if errs != nil {
+		return logContentResponse, errs[0]
+	}
+	err := xml.Unmarshal([]byte(res), &logRetrieveJobCreateResponse)
+	if err != nil {
+		return logContentResponse, err
+	}
+	return logContentResponse,nil
+}
+
+
+
 }
