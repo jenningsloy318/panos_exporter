@@ -3,10 +3,11 @@ package collector
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/jenningsloy318/panos_exporter/panos"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
-	"strings"
 )
 
 var (
@@ -67,8 +68,9 @@ func (d *SystemResourceUtilCollector) Collect(ch chan<- prometheus.Metric) {
 
 	for _, line := range topList {
 		if strings.Contains(line, "Cpu(s):") {
-			for _, cpuItem := range strings.Split(strings.Split(line, ":")[1], ",") {
-				valueSlice := strings.Split(strings.TrimSpace(cpuItem), "%")
+			newCPUline := strings.ReplaceAll(line, "%", " ")
+			for _, cpuItem := range strings.Split(strings.Split(newCPUline, ":")[1], ",") {
+				valueSlice := strings.Split(strings.TrimSpace(cpuItem), " ")
 				cpuMetrics[valueSlice[1]] = valueSlice[0]
 			}
 
