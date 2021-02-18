@@ -33,7 +33,6 @@ check_license:
 
 build: | 
 	@echo ">> building binaries"
-	go env -w GOPROXY=https://goproxy.cn
 	$(GO) build -o build/panos_exporter -ldflags  '-X "main.Version=$(VERSION)" -X  "main.BuildRevision=$(REVERSION)" -X  "main.BuildBranch=$(BRANCH)" -X "main.BuildTime=$(TIME)" -X "main.BuildHost=$(HOSTNAME)"'
 
 docker-build:
