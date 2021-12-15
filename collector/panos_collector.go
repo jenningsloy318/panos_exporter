@@ -58,11 +58,11 @@ func NewPanosCollector(ctx context.Context, host string, username string, passwo
 	return &PanosCollector{
 		ctx:         ctx,
 		panosClient: panosClient,
-		collectors:  map[string]prometheus.Collector{
-			"GlobalCounter": globalCounterCollector,
-			"SessionCollector": sessionCollector,
-			"InterfaceCollector": interfaceCollector,
-			"InterfaceCounterCollector": interfaceCounterCollector,
+		collectors: map[string]prometheus.Collector{
+			"GlobalCounter":                      globalCounterCollector,
+			"SessionCollector":                   sessionCollector,
+			"InterfaceCollector":                 interfaceCollector,
+			"InterfaceCounterCollector":          interfaceCounterCollector,
 			"DataProcessorResourceUtilCollector": dataProcessorResourceUtilCollector,
 			//"systemResourceUtilCollector":systemResourceUtilCollector
 		},
