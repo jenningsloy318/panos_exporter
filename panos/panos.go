@@ -357,6 +357,68 @@ func (p *PaloAlto) GetInterfaceCounterData(ctx context.Context) (InterfaceCounte
   return interfaceCounterResponse, nil
 }
 
+// GetInterfaceData() will get data for interfaces
+
+type IfnetEntry struct {
+	Name       string `xml:"name"`
+	Zone       string `xml:"zone"`
+	Fwd        string `xml:"fwd"`
+	VSys       int    `xml:"vsys"`
+	DynAddress string `xml:"dyn-addr"`
+	Addr6      string `xml:"addr6"`
+	Tag        string `xml:"tag"`
+	IP         string `xml:"ip"`
+	ID         int    `xml:"id"`
+	Addr       string `xml:"addr"`
+}
+
+type Ifnet struct {
+	IfnetEntries []IfnetEntry `xml:"entry"`
+}
+
+type HwEntry struct {
+	Name   string `xml:"name"`
+	Duplex string `xml:"duplex"`
+	Type   int    `xml:"type"`
+	State  string `xml:"state"`
+	St     string `xml:"st"`
+	Mac    string `xml:"mac"`
+	Mode   string `xml:"mode"`
+	Speed  string `xml:"speed"`
+	ID     int    `xml:"id"`
+}
+
+type Hw struct {
+	HwEntries []HwEntry `xml:"entry"`
+}
+
+type InterfaceResponse struct {
+	XMLName xml.Name `xml:"response"`
+	Status  string   `xml:"status,attr"`
+	Code    string   `xml:"code,attr"`
+	Result  struct {
+		Ifnet Ifnet `xml:"ifnet,omitempty"`
+		Hw    Hw    `xml:"hw,omitempty"`
+	} `xml:"result"`
+}
+
+func (p *PaloAlto) GetInterfaceData(ctx context.Context) (InterfaceResponse, error) {
+	_, iCancel := context.WithCancel(ctx)
+	defer iCancel()
+	var interfaceResponse InterfaceResponse
+	command := "<show><interface>all</interface></show>"
+	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
+	if errs != nil {
+		return interfaceResponse, errs[0]
+	}
+
+	err := xml.Unmarshal([]byte(res), &interfaceResponse)
+	if err != nil {
+		return interfaceResponse, err
+	}
+	return interfaceResponse, nil
+}
+
 // data processor resource utilization
 
 type CPULoadAverageEntryData struct {
@@ -606,3 +668,86 @@ func (p *PaloAlto) RetrieveLogContent(ctx context.Context) (LogContentResponse, 
   return logContentResponse,nil
 }
 
+// session info
+
+type SessionInfo struct {
+	TmoSctpshutdown     int    `xml:"tmo-sctpshutdown"`
+	TcpNonsynRej        bool   `xml:"tcp-nonsyn-rej"`
+	TmoTcpinit          int    `xml:"tmo-tcpinit"`
+	TmoTcp              int    `xml:"tmo-tcp"`
+	Pps                 int    `xml:"pps"`
+	TmoTcpDelayedAck    int    `xml:"tmo-tcp-delayed-ack"`
+	NumMax              int    `xml:"num-max"`
+	AgeScanThresh       int    `xml:"age-scan-thresh"`
+	TmoTcphalfclosed    int    `xml:"tmo-tcphalfclosed"`
+	NumActive           int    `xml:"num-active"`
+	TmoSctp             int    `xml:"tmo-sctp"`
+	DisDef              int    `xml:"dis-def"`
+	NumMcast            int    `xml:"num-mcast"`
+	IcmpUnreachableRate int    `xml:"icmp-unreachable-rate"`
+	TmoTcptimewait      int    `xml:"tmo-tcptimewait"`
+	AgeScanSsf          int    `xml:"age-scan-ssf"`
+	TmoUdp              int    `xml:"tmo-udp"`
+	VardataRate         int    `xml:"vardata-rate"`
+	AgeScanTmo          int    `xml:"age-scan-tmo"`
+	DisSctp             int    `xml:"dis-sctp"`
+	Dp                  string `xml:"</dp"`
+	DisTcp              int    `xml:"s-tcp"`
+	TcpRejectSiwThresh  int    `xml:"tcp-reject-siw-thresh"`
+	NumUdp              int    `xml:"num-udp"`
+	TmoSctpcookie       int    `xml:"tmo-sctpcookie"`
+	TmoIcmp             int    `xml:"tmo-icmp"`
+	MaxPendingMcast     int    `xml:"max-pending-mcast"`
+	AgeAccelThresh      int    `xml:"age-accel-thresh"`
+	TcpDiffSynRej       bool   `xml:"tcp-diff-syn-rej"`
+	NumGtpc             int    `xml:"num-gtpc"`
+	OorAction           string `xml:"oor-action"`
+	TmoDef              int    `xml:"tmo-def"`
+	NumPredict          int    `xml:"num-predict"`
+	AgeAccelEn          bool   `xml:"age-accel-en"`
+	AgeAccelTsf         int    `xml:"age-accel-tsf"`
+	HwOffload           bool   `xml:"hw-offload"`
+	NumIcmp             int    `xml:"num-icmp"`
+	NumGtpuActive       int    `xml:"num-gtpu-active"`
+	TmoCp               int    `xml:"tmo-cp"`
+	TcpStrictRst        bool   `xml:"tcp-strict-rst"`
+	TmoSctpinit         int    `xml:"tmo-sctpinit"`
+	StrictChecksum      bool   `xml:"strict-checksum"`
+	TmoTcpUnverifRst    int    `xml:"tmo-tcp-unverif-rst"`
+	NumBcast            int    `xml:"num-bcast"`
+	Ipv6Fw              bool   `xml:"ipv6-fw"`
+	Cps                 int    `xml:"cps"`
+	NumInstalled        int    `xml:"num-installed"`
+	NumTcp              int    `xml:"num-tcp"`
+	DisUdp              int    `xml:"dis-udp"`
+	NumSctpAssoc        int    `xml:"num-sctp-assoc"`
+	NumSctpSess         int    `xml:"num-sctp-sess"`
+	TcpRejectSiwEnable  bool   `xml:"tcp-reject-siw-enable"`
+	TmoTcphandshake     int    `xml:"tmo-tcphandshake"`
+	HwUdpOffload        bool   `xml:"hw-udp-offload"`
+	Kbps                int    `xml:"kbps"`
+	NumGtpuPending      int    `xml:"num-gtpu-pending"`
+}
+
+type SessionInfoResponse struct {
+	XMLName     xml.Name    `xml:"response"`
+	Status      string      `xml:"status,attr"`
+	SessionInfo SessionInfo `xml:"result"`
+}
+
+func (p *PaloAlto) GetSessionInfo(ctx context.Context) (SessionInfoResponse, error) {
+	_, iCancel := context.WithCancel(ctx)
+	defer iCancel()
+	var sessionInfoResponse SessionInfoResponse
+	command := "<show><session><info></info></session></show>"
+	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
+	if errs != nil {
+		return sessionInfoResponse, errs[0]
+	}
+
+	err := xml.Unmarshal([]byte(res), &sessionInfoResponse)
+	if err != nil {
+		return sessionInfoResponse, err
+	}
+	return sessionInfoResponse, nil
+}

@@ -49,6 +49,8 @@ add panos_exporter job config as following
   > add label drop config as some metrics natively has `rate,id` lables
 ## API Commands for metrics
 - global_counter_collector: `<show><counter><global></global></counter></show>`
+- session_collector: `<show><session><info></info></session></show>`
+- interface_collector: `<show><interface>all</interface></show>`
 - interface_counter_collector: `<show><counter><interface>all</interface></counter></show>`
 - system_resource_utilization_collector: `<show><system><resources></resources></system></show>`
 - data_processor_resource_utilization_collector: `<show><running><resource-monitor><second><last>1</last></second></resource-monitor></running></show>`
