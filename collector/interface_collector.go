@@ -53,20 +53,40 @@ func (i *InterfaceCollector) Collect(ch chan<- prometheus.Metric) {
 	i.metrics = map[string]InterfaceMetric{}
 
 	InterfaceResponse, err := i.panosClient.GetInterfaceData(iContext)
-	ManagementInterfaceResponse, err2 := i.panosClient.GetManagementInterfaceInfo(iContext)
+	if err != nil {
+		log.Infof("Error getting standard interfaces data, %s", err)
+	} else {
+		// Add status for standard (non-management) hardware interfaces
+		HWEntries := InterfaceResponse.Result.Hw.HwEntries
+		for _, entry := range HWEntries {
+			labelValues := []string{entry.Name, "interface", "hw"}
 
-	if err != nil || err2 != nil {
-		log.Infof("Error getting Interfaces data, %s", err)
-		return
+			// HW interface state
+			stateInterfaceMetric := InterfaceMetric{
+				desc: prometheus.NewDesc(
+					prometheus.BuildFQName(namespace, InterfaceSubsystem, "state"),
+					"Status of hw interface",
+					InterfaceLabelNames,
+					nil,
+				),
+			}
+			i.metrics["state"] = stateInterfaceMetric
+
+			stateValue := 0
+			if entry.State == "up" {
+				stateValue = 1
+			}
+			ch <- prometheus.MustNewConstMetric(stateInterfaceMetric.desc, prometheus.GaugeValue, float64(stateValue), labelValues...)
+		}
 	}
 
-	// parse interface hw data
-	HWEntries := InterfaceResponse.Result.Hw.HwEntries
-	for _, entry := range HWEntries {
-		labelValues := []string{entry.Name, "interface", "hw"}
-
-		// HW interface state
-		stateInterfaceMetric := InterfaceMetric{
+	ManagementInterfaceResponse, err := i.panosClient.GetManagementInterfaceInfo(iContext)
+	if err != nil {
+		log.Infof("Error getting management interfaces data, %s", err)
+	} else {
+		// Add status for management interface
+		managementLabelValues := []string{"management", "interface", "hw"}
+		stateManagementInterfaceMetric := InterfaceMetric{
 			desc: prometheus.NewDesc(
 				prometheus.BuildFQName(namespace, InterfaceSubsystem, "state"),
 				"Status of hw interface",
@@ -74,32 +94,13 @@ func (i *InterfaceCollector) Collect(ch chan<- prometheus.Metric) {
 				nil,
 			),
 		}
-		i.metrics["state"] = stateInterfaceMetric
 
-		stateValue := 0
-		if entry.State == "up" {
-			stateValue = 1
+		managementStateValue := 0
+		if ManagementInterfaceResponse.Result.Info.State == "up" {
+			managementStateValue = 1
 		}
-		ch <- prometheus.MustNewConstMetric(stateInterfaceMetric.desc, prometheus.GaugeValue, float64(stateValue), labelValues...)
+		ch <- prometheus.MustNewConstMetric(stateManagementInterfaceMetric.desc, prometheus.GaugeValue, float64(managementStateValue), managementLabelValues...)
 	}
-
-	// Add status for management interface
-	managementLabelValues := []string{"management", "interface", "hw"}
-	stateManagementInterfaceMetric := InterfaceMetric{
-		desc: prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, InterfaceSubsystem, "state"),
-			"Status of hw interface",
-			InterfaceLabelNames,
-			nil,
-		),
-	}
-
-	managementStateValue := 0
-	if ManagementInterfaceResponse.Result.Info.State == "up" {
-		managementStateValue = 1
-	}
-	ch <- prometheus.MustNewConstMetric(stateManagementInterfaceMetric.desc, prometheus.GaugeValue, float64(managementStateValue), managementLabelValues...)
-
 
 	i.collectorScrapeStatus.WithLabelValues("interface").Set(float64(1))
 }
