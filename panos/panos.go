@@ -419,6 +419,50 @@ func (p *PaloAlto) GetInterfaceData(ctx context.Context) (InterfaceResponse, err
 	return interfaceResponse, nil
 }
 
+type ManagementInterfaceInfo struct {
+	Gw      string `xml:"gw"`
+	Name    string `xml:"name"`
+	Duplex  string `xml:"duplex"`
+	Ip      string `xml:"ip"`
+	StateC  string `xml:"state_c"`
+	Ipv6gw  string `xml:"ipv6gw"`
+	Netmask string `xml:"netmask"`
+	Hwaddr  string `xml:"hwaddr"`
+	State   string `xml:"state"`
+	DuplexC string `xml:"duplex_c"`
+	Ipv6ll  string `xml:"ipv6ll"`
+	Ipv6    string `xml:"ipv6"`
+	SpeedC  string `xml:"speed_c"`
+	Speed   string `xml:"speed"`
+}
+
+type ManagementInterfaceResponse struct {
+	XMLName xml.Name `xml:"response"`
+	Status  string   `xml:"status,attr"`
+	Code    string   `xml:"code,attr"`
+	Result  struct {
+		Info ManagementInterfaceInfo `xml:"info,omitempty"`
+		// 'counters' also available in xml
+	} `xml:"result"`
+}
+
+func (p *PaloAlto) GetManagementInterfaceInfo(ctx context.Context) (ManagementInterfaceResponse, error) {
+	_, iCancel := context.WithCancel(ctx)
+	defer iCancel()
+	var interfaceResponse ManagementInterfaceResponse
+	command := "<show><interface>management</interface></show>"
+	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
+	if errs != nil {
+		return interfaceResponse, errs[0]
+	}
+
+	err := xml.Unmarshal([]byte(res), &interfaceResponse)
+	if err != nil {
+		return interfaceResponse, err
+	}
+	return interfaceResponse, nil
+}
+
 // data processor resource utilization
 
 type CPULoadAverageEntryData struct {

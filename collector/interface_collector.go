@@ -51,10 +51,12 @@ func (i *InterfaceCollector) Collect(ch chan<- prometheus.Metric) {
 	iContext, iCancel := context.WithCancel(i.ctx)
 	defer iCancel()
 	i.metrics = map[string]InterfaceMetric{}
-	InterfaceResponse, err := i.panosClient.GetInterfaceData(iContext)
 
-	if err != nil {
-		log.Infof("Error getting Interface data, %s", err)
+	InterfaceResponse, err := i.panosClient.GetInterfaceData(iContext)
+	ManagementInterfaceResponse, err2 := i.panosClient.GetManagementInterfaceInfo(iContext)
+
+	if err != nil || err2 != nil {
+		log.Infof("Error getting Interfaces data, %s", err)
 		return
 	}
 
@@ -81,6 +83,23 @@ func (i *InterfaceCollector) Collect(ch chan<- prometheus.Metric) {
 		ch <- prometheus.MustNewConstMetric(stateInterfaceMetric.desc, prometheus.GaugeValue, float64(stateValue), labelValues...)
 	}
 
-	i.collectorScrapeStatus.WithLabelValues("interface").Set(float64(1))
+	// Add status for management interface
+	managementLabelValues := []string{"management", "interface", "hw"}
+	stateManagementInterfaceMetric := InterfaceMetric{
+		desc: prometheus.NewDesc(
+			prometheus.BuildFQName(namespace, InterfaceSubsystem, "state"),
+			"Status of hw interface",
+			InterfaceLabelNames,
+			nil,
+		),
+	}
 
+	managementStateValue := 0
+	if ManagementInterfaceResponse.Result.Info.State == "up" {
+		managementStateValue = 1
+	}
+	ch <- prometheus.MustNewConstMetric(stateManagementInterfaceMetric.desc, prometheus.GaugeValue, float64(managementStateValue), managementLabelValues...)
+
+
+	i.collectorScrapeStatus.WithLabelValues("interface").Set(float64(1))
 }
