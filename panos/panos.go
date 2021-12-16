@@ -793,3 +793,112 @@ func (p *PaloAlto) GetSessionInfo(ctx context.Context) (SessionInfoResponse, err
 	}
 	return sessionInfoResponse, nil
 }
+
+// Top blocked websites
+
+type BlockedWebsite struct {
+	Destination         string `xml:"dst"`
+	ResolvedDestination string `xml:"resolved-dst"`
+	RepeatCount         int    `xml:"repeatcnt"`
+}
+
+type TopBlockedWebsitesReport struct {
+	XMLName xml.Name `xml:"report"`
+	Name    string   `xml:"reportname,attr"`
+	LogType string   `xml:"logtype,attr"`
+	Result  struct {
+		BlockedWebsites []BlockedWebsite `xml:"entry,omitempty"`
+	} `xml:"result"`
+}
+
+func (p *PaloAlto) GetTopBlockedWebsites(ctx context.Context) (TopBlockedWebsitesReport, error) {
+	_, iCancel := context.WithCancel(ctx)
+	defer iCancel()
+
+	var topBlockedWebsitesReport TopBlockedWebsitesReport
+	reportName := "top-blocked-websites"
+	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=report&async=yes&reporttype=predefined&reportname=%s", p.URI, p.Key, reportName)).End()
+	if errs != nil {
+		return topBlockedWebsitesReport, errs[0]
+	}
+
+	err := xml.Unmarshal([]byte(res), &topBlockedWebsitesReport)
+	if err != nil {
+		return topBlockedWebsitesReport, err
+	}
+	return topBlockedWebsitesReport, nil
+}
+
+// Top sources
+
+type Source struct {
+	Source         string `xml:"src"`
+	ResolvedSource string `xml:"resolved-src"`
+	SourceUser     string `xml:"srcuser"`
+	Bytes          int    `xml:"bytes"`
+	Sessions       int    `xml:"sessions"`
+}
+
+type TopSourcesReport struct {
+	XMLName xml.Name `xml:"report"`
+	Name    string   `xml:"reportname,attr"`
+	LogType string   `xml:"logtype,attr"`
+	Result  struct {
+		Sources []Source `xml:"entry,omitempty"`
+	} `xml:"result"`
+}
+
+func (p *PaloAlto) GetTopSources(ctx context.Context) (TopSourcesReport, error) {
+	_, iCancel := context.WithCancel(ctx)
+	defer iCancel()
+
+	var topSourcesReport TopSourcesReport
+	reportName := "top-sources"
+	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=report&async=yes&reporttype=predefined&reportname=%s", p.URI, p.Key, reportName)).End()
+	if errs != nil {
+		return topSourcesReport, errs[0]
+	}
+
+	err := xml.Unmarshal([]byte(res), &topSourcesReport)
+	if err != nil {
+		return topSourcesReport, err
+	}
+	return topSourcesReport, nil
+}
+
+// Top destinations
+
+type Destination struct {
+	Destination         string `xml:"dst"`
+	ResolvedDestination string `xml:"resolved-dst"`
+	SourceUser          string `xml:"dstuser"`
+	Bytes               int    `xml:"bytes"`
+	Sessions            int    `xml:"sessions"`
+}
+
+type TopDestinationsReport struct {
+	XMLName xml.Name `xml:"report"`
+	Name    string   `xml:"reportname,attr"`
+	LogType string   `xml:"logtype,attr"`
+	Result  struct {
+		Destinations []Destination `xml:"entry,omitempty"`
+	} `xml:"result"`
+}
+
+func (p *PaloAlto) GetTopDestinations(ctx context.Context) (TopDestinationsReport, error) {
+	_, iCancel := context.WithCancel(ctx)
+	defer iCancel()
+
+	var topDestinationsReport TopDestinationsReport
+	reportName := "top-destinations"
+	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=report&async=yes&reporttype=predefined&reportname=%s", p.URI, p.Key, reportName)).End()
+	if errs != nil {
+		return topDestinationsReport, errs[0]
+	}
+
+	err := xml.Unmarshal([]byte(res), &topDestinationsReport)
+	if err != nil {
+		return topDestinationsReport, err
+	}
+	return topDestinationsReport, nil
+}
