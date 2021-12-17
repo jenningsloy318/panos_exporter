@@ -47,9 +47,18 @@ func (i *PanoramaCollector) Collect(ch chan<- prometheus.Metric) {
 	defer iCancel()
 	i.metrics = map[string]PanoramaMetric{}
 
-	//TODO: allow to configure deviceGroup and maybe rulebaseName to expose
-	i.collectRuleUsage(ch, iContext, "vpoda3r7np-dg", "security")
-	i.collectRuleUsage(ch, iContext, "vpoda3r7np-dg", "nat")
+	DeviceGroups, err := i.panosClient.GetDeviceGroupNames(i.ctx)
+	if err != nil {
+		log.Infof("Error getting rule usage for devicegroup %s", err)
+		return
+	}
+
+	for _, deviceGroup := range DeviceGroups {
+		// TODO: allow to configure which rulebase to retrieve
+		for _, rulebaseName := range []string{"security", "nat"} {
+			i.collectRuleUsage(ch, iContext, deviceGroup, rulebaseName)
+		}
+	}
 
 	i.collectorScrapeStatus.WithLabelValues("RuleUsage").Set(float64(1))
 }
@@ -68,8 +77,8 @@ func (i *PanoramaCollector) collectRuleUsage(ch chan<- prometheus.Metric, iConte
 	for _, ruleUsage := range rulesUsage {
 		ruleUsageMetric := PanoramaMetric{
 			desc: prometheus.NewDesc(
-				prometheus.BuildFQName(namespace, ReportSubsystem, rulebaseName + "RuleUsage"),
-				rulebaseName +" rules usage",
+				prometheus.BuildFQName(namespace, ReportSubsystem, rulebaseName+"RuleUsage"),
+				rulebaseName+" rules usage",
 				labelNames,
 				nil,
 			),

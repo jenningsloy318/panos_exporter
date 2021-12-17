@@ -223,6 +223,43 @@ func NewPanosClient(host string, authmethod *AuthMethod) (*PaloAlto, error) {
 	}, nil
 }
 
+type DeviceGroupEntry struct {
+	Name string `xml:"name,attr"`
+}
+
+type DeviceGroupResponse struct {
+	XMLName xml.Name `xml:"response"`
+	Status  string   `xml:"status,attr"`
+	Code    string   `xml:"code,attr"`
+	Result  struct {
+		Devicegroups []DeviceGroupEntry `xml:"devicegroups>entry,omitempty"`
+	} `xml:"result"`
+}
+
+func (p *PaloAlto) GetDeviceGroupNames(ctx context.Context) ([]string, error) {
+	_, gCancel := context.WithCancel(ctx)
+	defer gCancel()
+
+	var deviceGroups []string
+	var deviceGroupResponse DeviceGroupResponse
+
+	command := "<show><devicegroups></devicegroups></show>"
+	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
+	if errs != nil {
+		return deviceGroups, errs[0]
+	}
+
+	err := xml.Unmarshal([]byte(res), &deviceGroupResponse)
+	if err != nil {
+		return deviceGroups, err
+	}
+
+	for _, entry := range deviceGroupResponse.Result.Devicegroups {
+		deviceGroups = append(deviceGroups, entry.Name)
+	}
+	return deviceGroups, nil
+}
+
 // GetGlobalCounterData() will   get all counter data for global counter
 
 type GlobalCounterEntryData struct {
@@ -907,7 +944,7 @@ func (p *PaloAlto) GetTopDestinations(ctx context.Context) (TopDestinationsRepor
 
 type RuleEntry struct {
 	Name                  string `xml:"name,attr"`
-	State             string `xml:"rule-state"`
+	State                 string `xml:"rule-state"`
 	AllConnected          string `xml:"all-connected"`
 	CreationTimestamp     string `xml:"rule-creation-timestamp"`
 	ModificationTimestamp string `xml:"rule-modification-timestamp"`
