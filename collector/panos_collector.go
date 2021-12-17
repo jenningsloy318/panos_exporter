@@ -53,8 +53,9 @@ func NewPanosCollector(ctx context.Context, host string, username string, passwo
 	interfaceCollector := NewInterfaceCollector(ctx, namespace, panosClient)
 	interfaceCounterCollector := NewInterfaceCounterCollector(ctx, namespace, panosClient)
 	dataProcessorResourceUtilCollector := NewDataProcessorResourceUtilCollector(ctx, namespace, panosClient)
-	//systemResourceUtilCollector := NewSystemResourceUtilCollector(ctx, namespace, panosClient)
 	reportCollector := NewReportCollector(ctx, namespace, panosClient)
+	panoramaCollector := NewPanoramaCollector(ctx, namespace, panosClient)
+	//systemResourceUtilCollector := NewSystemResourceUtilCollector(ctx, namespace, panosClient)
 
 	return &PanosCollector{
 		ctx:         ctx,
@@ -66,7 +67,8 @@ func NewPanosCollector(ctx context.Context, host string, username string, passwo
 			"InterfaceCounterCollector":          interfaceCounterCollector,
 			"DataProcessorResourceUtilCollector": dataProcessorResourceUtilCollector,
 			"ReportCollector":                    reportCollector,
-			//"systemResourceUtilCollector":systemResourceUtilCollector
+			"PanoramaCollector":                  panoramaCollector,
+			//"systemResourceUtilCollector":      systemResourceUtilCollector
 		},
 		panosUp: prometheus.NewGauge(
 			prometheus.GaugeOpts{

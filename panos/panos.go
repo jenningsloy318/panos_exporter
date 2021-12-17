@@ -902,3 +902,42 @@ func (p *PaloAlto) GetTopDestinations(ctx context.Context) (TopDestinationsRepor
 	}
 	return topDestinationsReport, nil
 }
+
+// Rule hit count
+
+type RuleEntry struct {
+	Name                  string `xml:"name,attr"`
+	State             string `xml:"rule-state"`
+	AllConnected          string `xml:"all-connected"`
+	CreationTimestamp     string `xml:"rule-creation-timestamp"`
+	ModificationTimestamp string `xml:"rule-modification-timestamp"`
+}
+
+type RuleHitCountResponse struct {
+	XMLName xml.Name `xml:"response"`
+	Status  string   `xml:"status,attr"`
+	Rules   struct {
+		Rules []RuleEntry `xml:"entry"`
+	} `xml:"result>rule-hit-count>device-group>entry>rule-base>entry>rules"`
+}
+
+func (p *PaloAlto) GetRuleUsage(ctx context.Context, deviceGroup string, rulebaseName string) (RuleHitCountResponse, error) {
+	_, iCancel := context.WithCancel(ctx)
+	defer iCancel()
+
+	var ruleHitCount RuleHitCountResponse
+	command := fmt.Sprintf(
+		"<show><rule-hit-count><device-group><entry name='%s'><pre-rulebase><entry name='%s'><rules><all/></rules></entry></pre-rulebase></entry></device-group></rule-hit-count></show>",
+		deviceGroup, rulebaseName,
+	)
+	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
+	if errs != nil {
+		return ruleHitCount, errs[0]
+	}
+
+	err := xml.Unmarshal([]byte(res), &ruleHitCount)
+	if err != nil {
+		return ruleHitCount, err
+	}
+	return ruleHitCount, nil
+}
