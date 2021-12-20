@@ -2,6 +2,7 @@ package collector
 
 import (
 	"context"
+
 	"github.com/jenningsloy318/panos_exporter/panos"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
@@ -49,7 +50,7 @@ func (i *PanoramaCollector) Collect(ch chan<- prometheus.Metric) {
 
 	DeviceGroups, err := i.panosClient.GetDeviceGroupNames(i.ctx)
 	if err != nil {
-		log.Infof("Error getting rule usage for devicegroup %s", err)
+		log.Errorf("Error getting rule usage for devicegroup %s", err)
 		return
 	}
 
@@ -67,7 +68,7 @@ func (i *PanoramaCollector) collectRuleUsage(ch chan<- prometheus.Metric, iConte
 
 	RuleHitCountResponse, err := i.panosClient.GetRuleUsage(iContext, deviceGroup, rulebaseName)
 	if err != nil {
-		log.Infof("Error getting rule usage for devicegroup %s", err)
+		log.Errorf("Error getting rule usage for devicegroup %s", err)
 		return
 	}
 

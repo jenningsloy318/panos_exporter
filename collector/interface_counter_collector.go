@@ -3,11 +3,12 @@ package collector
 import (
 	"context"
 	"fmt"
+	"reflect"
+	"strings"
+
 	"github.com/jenningsloy318/panos_exporter/panos"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
-	"reflect"
-	"strings"
 )
 
 var (
@@ -57,7 +58,7 @@ func (i *InterfaceCounterCollector) Collect(ch chan<- prometheus.Metric) {
 	interfaceCounterData, err := i.panosClient.GetInterfaceCounterData(iContext)
 
 	if err != nil {
-		log.Infof("Error getting Interface counter data, %s", err)
+		log.Errorf("Error getting Interface counter data, %s", err)
 		return
 	}
 

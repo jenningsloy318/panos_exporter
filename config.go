@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/prometheus/common/log"
-	yaml "gopkg.in/yaml.v2"
 	"io/ioutil"
 	"sync"
+
+	"github.com/prometheus/common/log"
+	yaml "gopkg.in/yaml.v2"
 )
 
 type Config struct {

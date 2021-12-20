@@ -2,6 +2,7 @@ package collector
 
 import (
 	"context"
+
 	"github.com/jenningsloy318/panos_exporter/panos"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
@@ -54,7 +55,7 @@ func (i *InterfaceCollector) Collect(ch chan<- prometheus.Metric) {
 
 	InterfaceResponse, err := i.panosClient.GetInterfaceData(iContext)
 	if err != nil {
-		log.Infof("Error getting standard interfaces data, %s", err)
+		log.Errorf("Error getting standard interfaces data, %s", err)
 	} else {
 		// Add status for standard (non-management) hardware interfaces
 		HWEntries := InterfaceResponse.Result.Hw.HwEntries
@@ -82,7 +83,7 @@ func (i *InterfaceCollector) Collect(ch chan<- prometheus.Metric) {
 
 	ManagementInterfaceResponse, err := i.panosClient.GetManagementInterfaceInfo(iContext)
 	if err != nil {
-		log.Infof("Error getting management interfaces data, %s", err)
+		log.Errorf("Error getting management interfaces data, %s", err)
 	} else {
 		// Add status for management interface
 		managementLabelValues := []string{"management", "interface", "hw"}

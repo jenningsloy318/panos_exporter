@@ -57,7 +57,7 @@ func (d *SystemResourceUtilCollector) Collect(ch chan<- prometheus.Metric) {
 
 	SystemResourceUtilData, err := d.panosClient.GetSystemsResourceUtilData(dcontext)
 	if err != nil {
-		log.Infof("Error getting System resource utilization data, %s", err)
+		log.Errorf("Error getting System resource utilization data, %s", err)
 		return
 	}
 

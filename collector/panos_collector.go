@@ -1,14 +1,13 @@
 package collector
 
 import (
-	"fmt"
-	"github.com/prometheus/client_golang/prometheus"
+	"context"
 	"sync"
 	"time"
-	//	"github.com/prometheus/common/log"
-	"context"
+
 	"github.com/jenningsloy318/panos_exporter/panos"
-	//"net/url"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/common/log"
 )
 
 // Metric name parts.
@@ -45,7 +44,7 @@ func NewPanosCollector(ctx context.Context, host string, username string, passwo
 
 	panosClient, err := panos.NewPanosClient(host, panosCreds)
 	if err != nil {
-		fmt.Println(err)
+		log.Error(err)
 	}
 
 	globalCounterCollector := NewGlobalCounterCollector(ctx, namespace, panosClient)
@@ -55,7 +54,7 @@ func NewPanosCollector(ctx context.Context, host string, username string, passwo
 	dataProcessorResourceUtilCollector := NewDataProcessorResourceUtilCollector(ctx, namespace, panosClient)
 	reportCollector := NewReportCollector(ctx, namespace, panosClient)
 	panoramaCollector := NewPanoramaCollector(ctx, namespace, panosClient)
-	//systemResourceUtilCollector := NewSystemResourceUtilCollector(ctx, namespace, panosClient)
+	systemResourceUtilCollector := NewSystemResourceUtilCollector(ctx, namespace, panosClient)
 
 	return &PanosCollector{
 		ctx:         ctx,
@@ -68,7 +67,7 @@ func NewPanosCollector(ctx context.Context, host string, username string, passwo
 			"DataProcessorResourceUtilCollector": dataProcessorResourceUtilCollector,
 			"ReportCollector":                    reportCollector,
 			"PanoramaCollector":                  panoramaCollector,
-			//"systemResourceUtilCollector":      systemResourceUtilCollector
+			"systemResourceUtilCollector":        systemResourceUtilCollector,
 		},
 		panosUp: prometheus.NewGauge(
 			prometheus.GaugeOpts{

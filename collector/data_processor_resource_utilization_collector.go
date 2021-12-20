@@ -3,6 +3,7 @@ package collector
 import (
 	"context"
 	"fmt"
+
 	"github.com/jenningsloy318/panos_exporter/panos"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
@@ -55,7 +56,7 @@ func (d *DataProcessorResourceUtilCollector) Collect(ch chan<- prometheus.Metric
 
 	DataProcessorResourceUtilData, err := d.panosClient.GetDataProcessorsResourceUtilData(dcontext)
 	if err != nil {
-		log.Infof("Error getting DataProcessor resource utilization data, %s", err)
+		log.Errorf("Error getting DataProcessor resource utilization data, %s", err)
 		return
 	}
 

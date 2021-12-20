@@ -2,6 +2,7 @@ package collector
 
 import (
 	"context"
+
 	"github.com/jenningsloy318/panos_exporter/panos"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
@@ -60,7 +61,7 @@ func (i *ReportCollector) Collect(ch chan<- prometheus.Metric) {
 func (i *ReportCollector) collectTopBlockedWebsites(ch chan<- prometheus.Metric, iContext context.Context) {
 	ReportResponse, err := i.panosClient.GetTopBlockedWebsites(iContext)
 	if err != nil {
-		log.Infof("Error getting report, %s", err)
+		log.Errorf("Error getting report, %s", err)
 		return
 	}
 
@@ -85,7 +86,7 @@ func (i *ReportCollector) collectTopBlockedWebsites(ch chan<- prometheus.Metric,
 func (i *ReportCollector) collectTopSources(ch chan<- prometheus.Metric, iContext context.Context) {
 	ReportResponse, err := i.panosClient.GetTopSources(iContext)
 	if err != nil {
-		log.Infof("Error getting report, %s", err)
+		log.Errorf("Error getting report, %s", err)
 		return
 	}
 
@@ -110,7 +111,7 @@ func (i *ReportCollector) collectTopSources(ch chan<- prometheus.Metric, iContex
 func (i *ReportCollector) collectTopDestinations(ch chan<- prometheus.Metric, iContext context.Context) {
 	ReportResponse, err := i.panosClient.GetTopDestinations(iContext)
 	if err != nil {
-		log.Infof("Error getting report, %s", err)
+		log.Errorf("Error getting report, %s", err)
 		return
 	}
 

@@ -2,6 +2,7 @@ package collector
 
 import (
 	"context"
+
 	"github.com/jenningsloy318/panos_exporter/panos"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
@@ -54,7 +55,7 @@ func (i *SessionCollector) Collect(ch chan<- prometheus.Metric) {
 	SessionResponse, err := i.panosClient.GetSessionInfo(iContext)
 
 	if err != nil {
-		log.Infof("Error getting Session info, %s", err)
+		log.Errorf("Error getting Session info, %s", err)
 		return
 	}
 
