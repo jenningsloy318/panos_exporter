@@ -1,0 +1,7 @@
+build/
+grafana.dashboard/
+scripts/
+
+.DS_Store
+.tool-versions
+*.iml

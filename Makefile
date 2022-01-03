@@ -33,7 +33,7 @@ check_license:
 
 build: | 
 	@echo ">> building binaries"
-	$(GO) build -o build/panos_exporter -ldflags  '-X "main.Version=$(VERSION)" -X  "main.BuildRevision=$(REVERSION)" -X  "main.BuildBranch=$(BRANCH)" -X "main.BuildTime=$(TIME)" -X "main.BuildHost=$(HOSTNAME)"'
+	CGO_ENABLED=0 $(GO) build -o build/panos_exporter -ldflags  '-X "main.Version=$(VERSION)" -X  "main.BuildRevision=$(REVERSION)" -X  "main.BuildBranch=$(BRANCH)" -X "main.BuildTime=$(TIME)" -X "main.BuildHost=$(HOSTNAME)"'
 
 docker-build:
 	@echo ">> building binaries in docker container"
