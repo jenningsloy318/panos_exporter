@@ -54,6 +54,13 @@ add panos_exporter job config as following
 - interface_counter_collector: `<show><counter><interface>all</interface></counter></show>`
 - system_resource_utilization_collector: `<show><system><resources></resources></system></show>`
 - data_processor_resource_utilization_collector: `<show><running><resource-monitor><second><last>1</last></second></resource-monitor></running></show>`
+- report_collector:
+  - Top blocked websites: `type=report&reporttype=predefined&reportname=top-blocked-websites`
+  - Top sources: `type=report&reporttype=predefined&reportname=top-sources`
+  - Top destinations: `type=report&reporttype=predefined&reportname=top-destinations`
+- panorama_collector (specific to panorama instances):
+  - Security rules usage for each device group: `<show><rule-hit-count><device-group><entry name='{deviceGroup}'><pre-rulebase><entry name='security'><rules><all/></rules></entry></pre-rulebase></entry></device-group></rule-hit-count></show>`
+  - NAT rules usage for each device group: `<show><rule-hit-count><device-group><entry name='{deviceGroup}'><pre-rulebase><entry name='nat'><rules><all/></rules></entry></pre-rulebase></entry></device-group></rule-hit-count></show>`
 
 ## Support devices
 - PA-3220(8.1.7)
