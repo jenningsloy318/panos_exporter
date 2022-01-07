@@ -12,3 +12,9 @@
 *.out
 *.yaml
 build
+
+# macos files
+.DS_Store
+
+# IDE configurations
+*.iml

@@ -49,14 +49,27 @@ func NewPanosCollector(ctx context.Context, host string, username string, passwo
 	}
 
 	globalCounterCollector := NewGlobalCounterCollector(ctx, namespace, panosClient)
+	sessionCollector := NewSessionCollector(ctx, namespace, panosClient)
+	interfaceCollector := NewInterfaceCollector(ctx, namespace, panosClient)
 	interfaceCounterCollector := NewInterfaceCounterCollector(ctx, namespace, panosClient)
 	dataProcessorResourceUtilCollector := NewDataProcessorResourceUtilCollector(ctx, namespace, panosClient)
-	systemResourceUtilCollector := NewSystemResourceUtilCollector(ctx, namespace, panosClient)
+	reportCollector := NewReportCollector(ctx, namespace, panosClient)
+	panoramaCollector := NewPanoramaCollector(ctx, namespace, panosClient)
+	//systemResourceUtilCollector := NewSystemResourceUtilCollector(ctx, namespace, panosClient)
 
 	return &PanosCollector{
 		ctx:         ctx,
 		panosClient: panosClient,
-		collectors:  map[string]prometheus.Collector{"GlobalCounter": globalCounterCollector, "InterfaceCounterCollector": interfaceCounterCollector,"DataProcessorResourceUtilCollector": dataProcessorResourceUtilCollector,"systemResourceUtilCollector":systemResourceUtilCollector},
+		collectors: map[string]prometheus.Collector{
+			"GlobalCounter":                      globalCounterCollector,
+			"SessionCollector":                   sessionCollector,
+			"InterfaceCollector":                 interfaceCollector,
+			"InterfaceCounterCollector":          interfaceCounterCollector,
+			"DataProcessorResourceUtilCollector": dataProcessorResourceUtilCollector,
+			"ReportCollector":                    reportCollector,
+			"PanoramaCollector":                  panoramaCollector,
+			//"systemResourceUtilCollector":      systemResourceUtilCollector
+		},
 		panosUp: prometheus.NewGauge(
 			prometheus.GaugeOpts{
 				Namespace: namespace,
