@@ -1,4 +1,4 @@
-module github.com/jenningsloy318/panos_exporter
+module github.com/Alfredo-Moreira/panos_exporter
 
 go 1.12
 
