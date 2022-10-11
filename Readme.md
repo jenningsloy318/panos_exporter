@@ -2,6 +2,21 @@ Panos_exporter
 ---
 panos_exporter is an exporter to scape metrics from Paloalto NGFW api to get its current status and expose as prometheus metrics; and it can be used to montior its running statuss 
 
+## Install
+
+To dockerize it, your Dockerfile should look like this:
+```yml
+FROM golang:1.19-buster
+WORKDIR /app/
+
+RUN go install github.com/Alfredo-Moreira/panos_exporter@latest
+
+COPY config.yaml /app/config.yaml
+
+EXPOSE 9654
+CMD ["/go/bin/panos_exporter", "--config.file=config.yaml"]
+```
+
 
 create a example configuration as yaml file:
 ```yaml

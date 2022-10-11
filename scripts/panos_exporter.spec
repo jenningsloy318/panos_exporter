@@ -10,7 +10,7 @@ Version: 0.10.0
 Release: 1%{?dist}
 Summary: Prometheus panos exporter.
 License: MIT
-URL:     https://github.com/jenningsloy318/panos_exporter
+URL:     https://github.com/Alfredo-Moreira/panos_exporter
 
 Source0: %{name}
 Source1: %{name}.service

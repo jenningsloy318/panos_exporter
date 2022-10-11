@@ -37,7 +37,7 @@ build: |
 
 docker-build:
 	@echo ">> building binaries in docker container"
-	$(DOCKER) run -v `pwd`:/go/src/github.com/jenningsloy318/panos_exporter  -w /go/src/github.com/jenningsloy318/panos_exporter docker.io/jenningsloy318/prom-builder  make build
+	$(DOCKER) run -v `pwd`:/go/src/github.com/Alfredo-Moreira/panos_exporter  -w /go/src/github.com/Alfredo-Moreira/panos_exporter docker.io/Alfredo-Moreira/prom-builder  make build
 
 rpm: | build
 	@echo ">> build rpm package"
@@ -45,7 +45,7 @@ rpm: | build
 
 docker-rpm:
 	@echo ">> build rpm package in docker container"
-	$(DOCKER) run -v `pwd`:/go/src/github.com/jenningsloy318/panos_exporter  -w /go/src/github.com/jenningsloy318/panos_exporter docker.io/jenningsloy318/prom-builder  make rpm
+	$(DOCKER) run -v `pwd`:/go/src/github.com/Alfredo-Moreira/panos_exporter  -w /go/src/github.com/Alfredo-Moreira/panos_exporter docker.io/Alfredo-Moreira/prom-builder  make rpm
 
 
 

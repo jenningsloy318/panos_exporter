@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/jenningsloy318/panos_exporter/collector"
+	"github.com/Alfredo-Moreira/panos_exporter/collector"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/log"

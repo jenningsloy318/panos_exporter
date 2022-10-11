@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jenningsloy318/panos_exporter/panos"
+	"github.com/Alfredo-Moreira/panos_exporter/panos"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
 )
@@ -53,7 +53,7 @@ func NewPanosCollector(ctx context.Context, host string, username string, passwo
 	interfaceCounterCollector := NewInterfaceCounterCollector(ctx, namespace, panosClient)
 	dataProcessorResourceUtilCollector := NewDataProcessorResourceUtilCollector(ctx, namespace, panosClient)
 	//reportCollector := NewReportCollector(ctx, namespace, panosClient)
-	// panoramaCollector := NewPanoramaCollector(ctx, namespace, panosClient)
+	panoramaCollector := NewPanoramaCollector(ctx, namespace, panosClient)
 	systemResourceUtilCollector := NewSystemResourceUtilCollector(ctx, namespace, panosClient)
 
 	return &PanosCollector{
@@ -66,7 +66,7 @@ func NewPanosCollector(ctx context.Context, host string, username string, passwo
 			"InterfaceCounterCollector":          interfaceCounterCollector,
 			"DataProcessorResourceUtilCollector": dataProcessorResourceUtilCollector,
 			//"ReportCollector":                    reportCollector,
-			//"PanoramaCollector":                  panoramaCollector,
+			"PanoramaCollector":                  panoramaCollector,
 			"systemResourceUtilCollector":        systemResourceUtilCollector,
 		},
 		panosUp: prometheus.NewGauge(
