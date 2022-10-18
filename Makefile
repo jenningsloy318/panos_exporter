@@ -2,6 +2,7 @@
 
 GO           ?= go
 GOFMT        ?= $(GO)fmt
+GO_VERSION   ?= $(subst go ,,$(shell grep "^go" go.mod ))
 FIRST_GOPATH := $(firstword $(subst :, ,$(shell $(GO) env GOPATH)))
 pkgs          = ./...
 
@@ -37,7 +38,7 @@ build: |
 
 docker-build:
 	@echo ">> building binaries in docker container"
-	$(DOCKER) run -v `pwd`:/go/src/github.com/jenningsloy318/panos_exporter  -w /go/src/github.com/jenningsloy318/panos_exporter docker.io/jenningsloy318/prom-builder  make build
+	$(DOCKER) run -v `pwd`:/go/src/github.com/jenningsloy318/panos_exporter  -w /go/src/github.com/jenningsloy318/panos_exporter golang:$(GO_VERSION)  make build
 
 rpm: | build
 	@echo ">> build rpm package"
@@ -45,7 +46,7 @@ rpm: | build
 
 docker-rpm:
 	@echo ">> build rpm package in docker container"
-	$(DOCKER) run -v `pwd`:/go/src/github.com/jenningsloy318/panos_exporter  -w /go/src/github.com/jenningsloy318/panos_exporter docker.io/jenningsloy318/prom-builder  make rpm
+	$(DOCKER) run -v `pwd`:/go/src/github.com/jenningsloy318/panos_exporter  -w /go/src/github.com/jenningsloy318/panos_exporter golang:$(GO_VERSION)  make rpm
 
 
 

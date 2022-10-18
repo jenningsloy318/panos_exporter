@@ -2,6 +2,7 @@ package collector
 
 import (
 	"context"
+	"math"
 
 	"github.com/jenningsloy318/panos_exporter/panos"
 	"github.com/prometheus/client_golang/prometheus"
@@ -58,6 +59,10 @@ func (i *ReportCollector) Collect(ch chan<- prometheus.Metric) {
 	i.collectorScrapeStatus.WithLabelValues("Report").Set(float64(1))
 }
 
+func SliceRange[K comparable](slice []K, max float64) []K {
+	return slice[0:int(math.Min(float64(len(slice)), max))]
+}
+
 func (i *ReportCollector) collectTopBlockedWebsites(ch chan<- prometheus.Metric, iContext context.Context) {
 	ReportResponse, err := i.panosClient.GetTopBlockedWebsites(iContext)
 	if err != nil {
@@ -68,7 +73,7 @@ func (i *ReportCollector) collectTopBlockedWebsites(ch chan<- prometheus.Metric,
 	topBlockedWebsites := ReportResponse.Result.BlockedWebsites
 	labelNames := []string{"domain", "category", "destination", "resolvedDestination"}
 
-	for _, website := range topBlockedWebsites[0:15] {
+	for _, website := range SliceRange(topBlockedWebsites, 15) {
 		topBlockedWebsitesMetric := ReportMetric{
 			desc: prometheus.NewDesc(
 				prometheus.BuildFQName(namespace, ReportSubsystem, "topblockedwebsites"),
@@ -93,7 +98,7 @@ func (i *ReportCollector) collectTopSources(ch chan<- prometheus.Metric, iContex
 	topSources := ReportResponse.Result.Sources
 	labelNames := []string{"domain", "category", "source", "resolvedSource"}
 
-	for _, source := range topSources[0:10] {
+	for _, source := range SliceRange(topSources, 10) {
 		topSourcesMetric := ReportMetric{
 			desc: prometheus.NewDesc(
 				prometheus.BuildFQName(namespace, ReportSubsystem, "topsources"),
@@ -118,7 +123,7 @@ func (i *ReportCollector) collectTopDestinations(ch chan<- prometheus.Metric, iC
 	topDestinations := ReportResponse.Result.Destinations
 	labelNames := []string{"domain", "category", "destination", "resolvedDestination"}
 
-	for _, destination := range topDestinations[0:10] {
+	for _, destination := range SliceRange(topDestinations, 10) {
 		topDestinationsMetric := ReportMetric{
 			desc: prometheus.NewDesc(
 				prometheus.BuildFQName(namespace, ReportSubsystem, "topdestinations"),
