@@ -149,7 +149,8 @@ func NewPanosClient(host string, authmethod *AuthMethod) (*PaloAlto, error) {
 	deviceType := "panos"
 
 	if len(authmethod.Credentials) > 0 {
-		_, body, errs := r.Clone().Get(fmt.Sprintf("https://%s/api/?type=keygen&user=%s&password=%s", host, authmethod.Credentials[0], authmethod.Credentials[1])).End()
+		url := fmt.Sprintf("https://%s/api/?type=keygen&user=%s&password=%s", host, url.QueryEscape(authmethod.Credentials[0]), url.QueryEscape(authmethod.Credentials[1]))
+		_, body, errs := r.Clone().Get(url).End()
 		if errs != nil {
 			return nil, errs[0]
 		}
