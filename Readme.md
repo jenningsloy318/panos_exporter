@@ -39,14 +39,8 @@ add panos_exporter job config as following
           target_label: instance
         - target_label: __address__
           replacement: localhost:9654  ### the address of the panos_exporter address
-      metric_relabel_configs:
-        - regex: 'rate'
-          action: labeldrop
-        - regex: 'id'
-          action: labeldrop 
 
   ```
-  > add label drop config as some metrics natively has `rate,id` lables
 ## API Commands for metrics
 - global_counter_collector: `<show><counter><global></global></counter></show>`
 - session_collector: `<show><session><info></info></session></show>`
