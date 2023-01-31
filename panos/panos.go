@@ -149,7 +149,7 @@ func NewPanosClient(host string, authmethod *AuthMethod) (*PaloAlto, error) {
 	deviceType := "panos"
 
 	if len(authmethod.Credentials) > 0 {
-		_, body, errs := r.Get(fmt.Sprintf("https://%s/api/?type=keygen&user=%s&password=%s", host, authmethod.Credentials[0], authmethod.Credentials[1])).End()
+		_, body, errs := r.Clone().Get(fmt.Sprintf("https://%s/api/?type=keygen&user=%s&password=%s", host, authmethod.Credentials[0], authmethod.Credentials[1])).End()
 		if errs != nil {
 			return nil, errs[0]
 		}
@@ -171,7 +171,7 @@ func NewPanosClient(host string, authmethod *AuthMethod) (*PaloAlto, error) {
 	}
 
 	uri := fmt.Sprintf("https://%s/api/?", host)
-	_, getInfo, errs := r.Get(fmt.Sprintf("%s&key=%s&type=op&cmd=<show><system><info></info></system></show>", uri, key)).End()
+	_, getInfo, errs := r.Clone().Get(fmt.Sprintf("%s&key=%s&type=op&cmd=<show><system><info></info></system></show>", uri, key)).End()
 	if errs != nil {
 		return nil, errs[0]
 	}
@@ -244,7 +244,7 @@ func (p *PaloAlto) GetDeviceGroupNames(ctx context.Context) ([]string, error) {
 	var deviceGroupResponse DeviceGroupResponse
 
 	command := "<show><devicegroups></devicegroups></show>"
-	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
+	_, res, errs := r.Clone().Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
 	if errs != nil {
 		return deviceGroups, errs[0]
 	}
@@ -297,7 +297,7 @@ func (p *PaloAlto) GetGlobalCounterData(ctx context.Context) (GlobalCounterRespo
 	defer gCancel()
 	var globalCounterResponse GlobalCounterResponse
 	command := "<show><counter><global></global></counter></show>"
-	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
+	_, res, errs := r.Clone().Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
 	if errs != nil {
 		return globalCounterResponse, errs[0]
 	}
@@ -382,7 +382,7 @@ func (p *PaloAlto) GetInterfaceCounterData(ctx context.Context) (InterfaceCounte
 	defer iCancel()
 	var interfaceCounterResponse InterfaceCounterResponse
 	command := "<show><counter><interface>all</interface></counter></show>"
-	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
+	_, res, errs := r.Clone().Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
 	if errs != nil {
 		return interfaceCounterResponse, errs[0]
 	}
@@ -444,7 +444,7 @@ func (p *PaloAlto) GetInterfaceData(ctx context.Context) (InterfaceResponse, err
 	defer iCancel()
 	var interfaceResponse InterfaceResponse
 	command := "<show><interface>all</interface></show>"
-	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
+	_, res, errs := r.Clone().Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
 	if errs != nil {
 		return interfaceResponse, errs[0]
 	}
@@ -488,7 +488,7 @@ func (p *PaloAlto) GetManagementInterfaceInfo(ctx context.Context) (ManagementIn
 	defer iCancel()
 	var interfaceResponse ManagementInterfaceResponse
 	command := "<show><interface>management</interface></show>"
-	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
+	_, res, errs := r.Clone().Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
 	if errs != nil {
 		return interfaceResponse, errs[0]
 	}
@@ -555,7 +555,7 @@ func (p *PaloAlto) GetDataProcessorsResourceUtilData(ctx context.Context) (DataP
 	defer dCancel()
 	var dataProcessorsResourceUtilResponse DataProcessorsResourceUtilResponse
 	command := "<show><running><resource-monitor><second><last>1</last></second></resource-monitor></running></show>"
-	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
+	_, res, errs := r.Clone().Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
 	if errs != nil {
 		return dataProcessorsResourceUtilResponse, errs[0]
 	}
@@ -578,7 +578,7 @@ func (p *PaloAlto) GetSystemsResourceUtilData(ctx context.Context) (SystemResour
 	defer sCancel()
 	var systemResourceUtilResponse SystemResourceUtilResponse
 	command := "<show><system><resources></resources></system></show>"
-	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
+	_, res, errs := r.Clone().Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
 	if errs != nil {
 		return systemResourceUtilResponse, errs[0]
 	}
@@ -608,7 +608,7 @@ func (p *PaloAlto) CreateLogRetrieveJob(ctx context.Context) (jobID string, err 
 	formattedCurentTime := fmt.Sprintf("%d/%02d/%02d %02d:%02d:%02d", currentTime.Year(), currentTime.Month(), currentTime.Day(), currentTime.Hour(), currentTime.Minute(), currentTime.Second())
 
 	command := fmt.Sprintf("query=( receive_time eq %s", formattedCurentTime)
-	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=log&log-type=threat&%s", p.URI, p.Key, url.QueryEscape(command))).End()
+	_, res, errs := r.Clone().Get(fmt.Sprintf("%s&key=%s&type=log&log-type=threat&%s", p.URI, p.Key, url.QueryEscape(command))).End()
 	if errs != nil {
 		return "", errs[0]
 	}
@@ -736,7 +736,7 @@ func (p *PaloAlto) RetrieveLogContent(ctx context.Context) (LogContentResponse, 
 	_, sCancel := context.WithCancel(ctx)
 	defer sCancel()
 
-	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=log&action=get&job-id=%s", p.URI, p.Key, jobID)).End()
+	_, res, errs := r.Clone().Get(fmt.Sprintf("%s&key=%s&type=log&action=get&job-id=%s", p.URI, p.Key, jobID)).End()
 	if errs != nil {
 		return logContentResponse, errs[0]
 	}
@@ -819,7 +819,7 @@ func (p *PaloAlto) GetSessionInfo(ctx context.Context) (SessionInfoResponse, err
 	defer iCancel()
 	var sessionInfoResponse SessionInfoResponse
 	command := "<show><session><info></info></session></show>"
-	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
+	_, res, errs := r.Clone().Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
 	if errs != nil {
 		return sessionInfoResponse, errs[0]
 	}
@@ -854,7 +854,7 @@ func (p *PaloAlto) GetTopBlockedWebsites(ctx context.Context) (TopBlockedWebsite
 
 	var topBlockedWebsitesReport TopBlockedWebsitesReport
 	reportName := "top-blocked-websites"
-	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=report&async=yes&reporttype=predefined&reportname=%s", p.URI, p.Key, reportName)).End()
+	_, res, errs := r.Clone().Get(fmt.Sprintf("%s&key=%s&type=report&async=yes&reporttype=predefined&reportname=%s", p.URI, p.Key, reportName)).End()
 	if errs != nil {
 		return topBlockedWebsitesReport, errs[0]
 	}
@@ -891,7 +891,7 @@ func (p *PaloAlto) GetTopSources(ctx context.Context) (TopSourcesReport, error) 
 
 	var topSourcesReport TopSourcesReport
 	reportName := "top-sources"
-	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=report&async=yes&reporttype=predefined&reportname=%s", p.URI, p.Key, reportName)).End()
+	_, res, errs := r.Clone().Get(fmt.Sprintf("%s&key=%s&type=report&async=yes&reporttype=predefined&reportname=%s", p.URI, p.Key, reportName)).End()
 	if errs != nil {
 		return topSourcesReport, errs[0]
 	}
@@ -928,7 +928,7 @@ func (p *PaloAlto) GetTopDestinations(ctx context.Context) (TopDestinationsRepor
 
 	var topDestinationsReport TopDestinationsReport
 	reportName := "top-destinations"
-	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=report&async=yes&reporttype=predefined&reportname=%s", p.URI, p.Key, reportName)).End()
+	_, res, errs := r.Clone().Get(fmt.Sprintf("%s&key=%s&type=report&async=yes&reporttype=predefined&reportname=%s", p.URI, p.Key, reportName)).End()
 	if errs != nil {
 		return topDestinationsReport, errs[0]
 	}
@@ -967,7 +967,7 @@ func (p *PaloAlto) GetRuleUsage(ctx context.Context, deviceGroup string, rulebas
 		"<show><rule-hit-count><device-group><entry name='%s'><pre-rulebase><entry name='%s'><rules><all/></rules></entry></pre-rulebase></entry></device-group></rule-hit-count></show>",
 		deviceGroup, rulebaseName,
 	)
-	_, res, errs := r.Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
+	_, res, errs := r.Clone().Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
 	if errs != nil {
 		return ruleHitCount, errs[0]
 	}
