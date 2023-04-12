@@ -59,20 +59,14 @@ func (i *NetworkCollector) Collect(ch chan<- prometheus.Metric) {
 		return
 	}
 
-	// for _, networkQosInterface := range networkQosInterfaceList {
-	// 	fmt.Printf("\nClassList: %v\n", networkQosInterface.ClassList)
-	// }
-
 	for _, networkQosInterface := range networkQosInterfaceList {
 		for _, class := range networkQosInterface.ClassList {
 
 			labelValues := []string{"network", "statistics", networkQosInterface.InterfaceName, networkQosInterface.Type, networkQosInterface.Group, class.Name}
 
-			// Number of active networks (xml: num-active)
-			// variableLabe := fmt.Sprintf("network_qos_statistics_%s", networkQosTunnel.Name)
 			activeNetworksMetric := NetworkMetric{
 				desc: prometheus.NewDesc(
-					prometheus.BuildFQName(namespace, NetworkSubsystem, "network_qos_statistics_kbps"),
+					prometheus.BuildFQName(namespace, NetworkSubsystem, "qos_statistics_kbps"),
 					"Network info: number of active networks",
 					NetworkLabelNames,
 					nil,
