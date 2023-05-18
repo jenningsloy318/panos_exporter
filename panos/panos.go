@@ -7,6 +7,8 @@ import (
 	"encoding/xml"
 	"fmt"
 	"net/url"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -978,4 +980,188 @@ func (p *PaloAlto) GetRuleUsage(ctx context.Context, deviceGroup string, rulebas
 		return ruleHitCount, err
 	}
 	return ruleHitCount, nil
+}
+
+type NetworkQosResponse struct {
+	XMLName xml.Name `xml:"response"`
+	Status  string   `xml:"status,attr"`
+	Result  string   `xml:"result"`
+}
+
+type Class struct {
+	Name  string
+	Value int
+}
+
+type NetworkQosInterface struct {
+	Id            int
+	InterfaceName string
+	Type          string
+	Group         string
+	ClassList     []Class
+}
+
+type QosInterfaceEntry struct {
+	XMLName xml.Name `xml:"entry"`
+	Name    string   `xml:"name,attr"`
+}
+
+type QosInterfaceResponse struct {
+	XMLName xml.Name            `xml:"response"`
+	Entry   []QosInterfaceEntry `xml:"result>interface>entry"`
+}
+
+func (p *PaloAlto) GetQosCounters(ctx context.Context, name string) (string, error) {
+	_, iCancel := context.WithCancel(ctx)
+	defer iCancel()
+
+	var result NetworkQosResponse
+	command := fmt.Sprintf(
+		"<show><qos><interface><entry name='%s'><counter></counter></entry></interface></qos></show>",
+		name,
+	)
+	_, res, errs := r.Clone().Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
+	if errs != nil {
+		return "", errs[0]
+	}
+
+	err := xml.Unmarshal([]byte(res), &result)
+	if err != nil {
+		return "", err
+	}
+	return result.Result, nil
+}
+
+func (p *PaloAlto) GetQosInterfaces(ctx context.Context) ([]NetworkQosInterface, error) {
+	_, iCancel := context.WithCancel(ctx)
+	defer iCancel()
+
+	var qosInterfaces QosInterfaceResponse
+	response := []NetworkQosInterface{}
+	xpath := "/config/devices/entry[@name='localhost.localdomain']/network/qos/interface"
+
+	_, res, errs := r.Clone().Get(fmt.Sprintf("%s&key=%s&type=config&action=get&xpath=%s", p.URI, p.Key, xpath)).End()
+	if errs != nil {
+		return response, errs[0]
+	}
+
+	err := xml.Unmarshal([]byte(res), &qosInterfaces)
+	if err != nil {
+		return response, err
+	}
+
+	for _, entry := range qosInterfaces.Entry {
+		qosCounters, err := p.GetQosCounters(ctx, entry.Name)
+		if err != nil {
+			return response, err
+		}
+
+		groupName := []string{}
+		idList := []int{}
+		parentList := []int{}
+		hasClass := []bool{}
+
+		for _, line := range strings.Split(qosCounters, "\n")[4:] {
+			split := strings.Fields(line)
+			if len(split) < 3 {
+				continue
+			}
+
+			if split[0] == "-Class" || split[1] == "-Class" {
+				hasClass[len(hasClass)-1] = true
+				continue
+			}
+
+			if (split[0][0] >= '0' && split[0][0] <= '9') || split[0] == "-1" {
+				groupName = append(groupName, split[2])
+
+				id, _ := strconv.Atoi(split[1])
+				idList = append(idList, id)
+
+				parent, _ := strconv.Atoi(split[0])
+				parentList = append(parentList, parent)
+
+				hasClass = append(hasClass, false)
+			}
+		}
+
+		for i := 0; i < len(groupName); i++ {
+			if !hasClass[i] {
+				continue
+			}
+			tags := []string{}
+			j := i
+			for parentList[j] != -1 {
+				j = parentList[j]
+				tags = append(tags, groupName[j])
+			}
+
+			if len(tags) == 1 {
+				response = append(response, NetworkQosInterface{Id: i, InterfaceName: tags[0], Type: groupName[i]})
+			} else {
+				response = append(response, NetworkQosInterface{Id: i, InterfaceName: tags[len(tags)-1], Type: tags[len(tags)-2], Group: groupName[i]})
+			}
+		}
+	}
+
+	return response, nil
+}
+
+func (p *PaloAlto) GetNetworkQosInterfaceSatistics(ctx context.Context, networkQosInterface NetworkQosInterface, response chan NetworkQosInterface) {
+	_, iCancel := context.WithCancel(ctx)
+	defer iCancel()
+
+	var networkQosResponse NetworkQosResponse
+	command := fmt.Sprintf("<show><qos><interface><entry name='%s'><throughput>%d</throughput></entry></interface></qos></show>", networkQosInterface.InterfaceName, networkQosInterface.Id)
+
+	_, res, errs := r.Clone().Get(fmt.Sprintf("%s&key=%s&type=op&cmd=%s", p.URI, p.Key, command)).End()
+	if errs != nil {
+		response <- NetworkQosInterface{}
+	}
+
+	err := xml.Unmarshal([]byte(res), &networkQosResponse)
+	if err != nil {
+		response <- NetworkQosInterface{}
+	}
+
+	// build all class (matched) for each tunnel
+	for i := 0; i < 8; i++ {
+		classCame := fmt.Sprintf("class %d", i)
+		regex := regexp.MustCompile(fmt.Sprintf(`%s:\s+(\d*) kbps`, classCame))
+		match := regex.FindStringSubmatch(networkQosResponse.Result)
+
+		if len(match) == 0 {
+			// networkQosInterface.ClassList = append(networkQosInterface.ClassList, Class{Name: classCame, Value: 0,})
+			continue
+		}
+
+		value, err := strconv.Atoi(match[1])
+		if err != nil {
+			continue
+		}
+
+		networkQosInterface.ClassList = append(networkQosInterface.ClassList, Class{
+			Name: classCame, Value: value,
+		})
+	}
+
+	response <- networkQosInterface
+}
+
+func (p *PaloAlto) GetNetworkTunnelTrafic(ctx context.Context) ([]NetworkQosInterface, error) {
+	_, iCancel := context.WithCancel(ctx)
+	defer iCancel()
+
+	networkQosInterfaceList, err := p.GetQosInterfaces(ctx)
+	if err != nil {
+		return networkQosInterfaceList, err
+	}
+
+	for i, networkQosInterface := range networkQosInterfaceList {
+		resp := make(chan NetworkQosInterface)
+		go p.GetNetworkQosInterfaceSatistics(ctx, networkQosInterface, resp)
+		networkQosInterfaceList[i] = <-resp
+	}
+
+	return networkQosInterfaceList, nil
 }
