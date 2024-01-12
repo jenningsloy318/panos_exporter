@@ -2,8 +2,9 @@ Panos_exporter
 ---
 panos_exporter is an exporter to scape metrics from Paloalto NGFW api to get its current status and expose as prometheus metrics; and it can be used to montior its running statuss 
 
+### Run from binary
 
-create a example configuration as yaml file:
+Create an example configuration as yaml file:
 ```yaml
 devices:
     10.36.48.15:
@@ -11,16 +12,30 @@ devices:
       password: pass
 ```
 
-then start panos_exporter via 
+Then start panos_exporter via 
 ```sh
 panos_exporter --config.file=panos_exporter.yaml 
 ```
 
-then we can get the metrics via 
-```
+Then you can get the metrics via the following command (the IP address beeing the Palo Alto appliance to monitor):
+```sh
 curl http://<panos_exporter host>:9654/panos?target=10.36.48.15
-
 ```
+
+### Run with Docker
+
+Run Panos exporter as a container by providing the configuration file with a bind mount (`-v <local file>:<container file>`).
+To access the metrics, you may bind the container port to your host port (`-p <host_port>:<container_port>`).
+
+```shell
+docker run \
+    -v $(pwd)/panos_exporter.yaml:/panos_exporter.yaml \
+    -p 9654:9654 \
+    ghcr.io/jenningsloy318/panos_exporter:latest \
+    --config.file=/panos_exporter.yaml
+```
+
+
 
 ## Prometheus Configuration
 add panos_exporter job config as following
