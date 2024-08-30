@@ -86,6 +86,18 @@ func (i *SessionCollector) Collect(ch chan<- prometheus.Metric) {
 	i.metrics["pps"] = ppsSessionsMetric
 	ch <- prometheus.MustNewConstMetric(ppsSessionsMetric.desc, prometheus.GaugeValue, float64(sessionInfo.Pps), labelValues...)
 
+	// Packets per second (xml: cps)
+	cpsSessionsMetric := SessionMetric{
+		desc: prometheus.NewDesc(
+			prometheus.BuildFQName(namespace, SessionSubsystem, "session_cps"),
+			"Session info: connections per second",
+			SessionLabelNames,
+			nil,
+		),
+	}
+	i.metrics["pps"] = cpsSessionsMetric
+	ch <- prometheus.MustNewConstMetric(cpsSessionsMetric.desc, prometheus.GaugeValue, float64(sessionInfo.Cps), labelValues...)
+
 	// Kilobits per second (xml: kbps)
 	kbpsSessionsMetric := SessionMetric{
 		desc: prometheus.NewDesc(
