@@ -66,6 +66,10 @@ func (i *InterfaceCounterCollector) Collect(ch chan<- prometheus.Metric) {
 	IfnetCounterDataEntries := interfaceCounterData.Result.IfnetCounter.IfnetCountersData
 
 	for _, entry := range IfnetCounterDataEntries {
+		// Skip entries with empty names to avoid duplicate metrics
+		if entry.Name == "" {
+			continue
+		}
 		labelValues := []string{entry.Name, "interface", "ifnet"}
 
 		valueOfEntry := reflect.ValueOf(&entry).Elem()
@@ -96,6 +100,10 @@ func (i *InterfaceCounterCollector) Collect(ch chan<- prometheus.Metric) {
 	// parse interface hw counters
 	HWCounterDataEntries := interfaceCounterData.Result.HwCounter.HwCountersData
 	for _, entry := range HWCounterDataEntries {
+		// Skip entries with empty names to avoid duplicate metrics
+		if entry.Name == "" {
+			continue
+		}
 		labelValues := []string{entry.Name, "interface_counter", "hw"}
 
 		valueOfEntry := reflect.ValueOf(&entry).Elem()
