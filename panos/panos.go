@@ -1061,7 +1061,14 @@ func (p *PaloAlto) GetQosInterfaces(ctx context.Context) ([]NetworkQosInterface,
 		parentList := []int{}
 		hasClass := []bool{}
 
-		for _, line := range strings.Split(qosCounters, "\n")[4:] {
+		lines := strings.Split(qosCounters, "\n")
+		// Skip header lines if they exist, otherwise start from beginning
+		startIndex := 4
+		if len(lines) <= startIndex {
+			startIndex = 0
+		}
+
+		for _, line := range lines[startIndex:] {
 			split := strings.Fields(line)
 			if len(split) < 3 {
 				continue
